@@ -1,0 +1,258 @@
+<!-- ======================================================
+FILE: /admin/live-service.html
+PROJECT: IATTV Website
+PURPOSE:
+Protected administration page for managing
+IATTV live-service settings.
+====================================================== -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>IATTV Admin | Live Service</title>
+
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body class="admin-dashboard-body">
+
+  <div id="adminLoading" class="admin-loading">
+    <div class="admin-loading-brand">IATTV</div>
+    <p>Verifying administrator access...</p>
+  </div>
+
+  <div id="adminApp" class="admin-app" hidden>
+
+    <header class="admin-header">
+
+      <div class="admin-header-brand">
+
+        <a
+          href="/admin/dashboard.html"
+          class="admin-header-logo"
+        >
+          IATTV
+        </a>
+
+        <div class="admin-header-label">
+          Ministry Administration
+        </div>
+
+      </div>
+
+      <div class="admin-header-user">
+
+        <span id="adminName"></span>
+
+        <button
+          id="signOutButton"
+          class="admin-signout-button"
+          type="button"
+        >
+          Sign Out
+        </button>
+
+      </div>
+
+    </header>
+
+    <main class="admin-dashboard">
+
+      <section class="dashboard-intro">
+
+        <p class="dashboard-eyebrow">
+          CONTENT MANAGEMENT
+        </p>
+
+        <h1>Live Service</h1>
+
+        <p>
+          Control the live-service link and schedule
+          shown on the public website.
+        </p>
+
+      </section>
+
+      <section class="admin-panel">
+
+        <form id="liveServiceForm">
+
+          <div class="admin-form-grid">
+
+            <div class="form-group admin-form-full">
+
+              <label class="admin-checkbox-row">
+
+                <input
+                  id="enabled"
+                  type="checkbox"
+                >
+
+                <span>
+                  Enable Live Service on the website
+                </span>
+
+              </label>
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="serviceTitle">
+                Service Title
+              </label>
+
+              <input
+                id="serviceTitle"
+                type="text"
+                placeholder="Sunday Worship Service"
+                required
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="serviceDay">
+                Service Day
+              </label>
+
+              <input
+                id="serviceDay"
+                type="text"
+                placeholder="Every Sunday"
+                required
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="serviceTime">
+                Service Time
+              </label>
+
+              <input
+                id="serviceTime"
+                type="text"
+                placeholder="10:00 AM"
+                required
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="timeZone">
+                Time Zone
+              </label>
+
+              <input
+                id="timeZone"
+                type="text"
+                placeholder="ET"
+                required
+              >
+
+            </div>
+
+            <div class="form-group admin-form-full">
+
+              <label for="liveUrl">
+                Live Service URL
+              </label>
+
+              <input
+                id="liveUrl"
+                type="url"
+                placeholder="https://..."
+                required
+              >
+
+            </div>
+
+            <div class="form-group admin-form-full">
+
+              <label for="note">
+                Optional Note
+              </label>
+
+              <textarea
+                id="note"
+                rows="3"
+                placeholder="Sunday Service at 10:00 AM Eastern Time."
+              ></textarea>
+
+            </div>
+
+          </div>
+
+          <div class="admin-form-actions">
+
+            <button
+              id="saveButton"
+              class="admin-login-button admin-form-submit"
+              type="submit"
+              disabled
+            >
+              Save Live Service
+            </button>
+
+            <p
+              id="formStatus"
+              class="login-message"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+        </form>
+
+      </section>
+
+      <section
+        id="savedPreview"
+        class="admin-panel"
+        hidden
+      >
+
+        <div class="admin-panel-heading">
+
+          <div>
+
+            <p class="dashboard-eyebrow">
+              CURRENT SETTINGS
+            </p>
+
+            <h2>
+              Saved Live Service
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div id="savedPreviewContent"></div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script
+    type="module"
+    src="/js/admin/live-service-admin.js?v=2"
+  ></script>
+
+</body>
+</html>

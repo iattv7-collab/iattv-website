@@ -1,0 +1,231 @@
+<!-- ======================================================
+FILE: /admin/prayer-requests.html
+PROJECT: IATTV Website
+PURPOSE:
+Protected administration page for prayer-request
+delivery settings and prayer-request management.
+====================================================== -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>IATTV Admin | Prayer Requests</title>
+
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body class="admin-dashboard-body">
+
+  <div id="adminLoading" class="admin-loading">
+    <div class="admin-loading-brand">IATTV</div>
+    <p>Verifying administrator access...</p>
+  </div>
+
+
+  <div id="adminApp" class="admin-app" hidden>
+
+    <header class="admin-header">
+
+      <div class="admin-header-brand">
+
+        <a
+          href="/admin/dashboard.html"
+          class="admin-header-logo"
+        >
+          IATTV
+        </a>
+
+        <div class="admin-header-label">
+          Ministry Administration
+        </div>
+
+      </div>
+
+
+      <div class="admin-header-user">
+
+        <span id="adminName"></span>
+
+        <button
+          id="signOutButton"
+          class="admin-signout-button"
+          type="button"
+        >
+          Sign Out
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <main class="admin-dashboard">
+
+      <section class="dashboard-intro">
+
+        <p class="dashboard-eyebrow">
+          MINISTRY
+        </p>
+
+        <h1>Prayer Requests</h1>
+
+        <p>
+          Manage prayer-request delivery and
+          submissions from the IATTV website.
+        </p>
+
+      </section>
+
+
+      <!-- ==================================================
+      PRAYER REQUEST DELIVERY
+      =================================================== -->
+
+      <section class="admin-panel">
+
+        <div class="admin-panel-heading">
+
+          <div>
+
+            <p class="dashboard-eyebrow">
+              DELIVERY
+            </p>
+
+            <h2>Prayer Request Email</h2>
+
+          </div>
+
+        </div>
+
+
+        <p>
+          Prayer requests submitted through the website
+          will be delivered to this email address.
+        </p>
+
+
+        <form id="prayerSettingsForm">
+
+          <div class="admin-form-grid">
+
+            <div class="form-group admin-form-full">
+
+              <label for="recipientEmail">
+                Destination Email
+              </label>
+
+              <input
+                id="recipientEmail"
+                type="email"
+                autocomplete="email"
+                placeholder="prayer@example.com"
+                required
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="admin-form-actions">
+
+            <button
+              id="saveEmailButton"
+              class="admin-login-button admin-form-submit"
+              type="submit"
+              disabled
+            >
+              Save Prayer Email
+            </button>
+
+            <p
+              id="settingsStatus"
+              class="login-message"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+        </form>
+
+
+        <div
+          id="savedEmailPreview"
+          hidden
+        >
+
+          <p class="dashboard-eyebrow">
+            CURRENT DESTINATION
+          </p>
+
+          <p>
+            <strong id="savedEmailAddress"></strong>
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- ==================================================
+      EXISTING PRAYER REQUESTS
+      Temporary during email transition.
+      =================================================== -->
+
+      <section class="admin-panel">
+
+        <div class="admin-panel-heading">
+
+          <div>
+
+            <p class="dashboard-eyebrow">
+              REQUESTS
+            </p>
+
+            <h2>Received Prayer Requests</h2>
+
+          </div>
+
+          <div id="requestCount"></div>
+
+        </div>
+
+
+        <p
+          id="pageStatus"
+          class="login-message"
+          aria-live="polite"
+        ></p>
+
+
+        <div id="prayerRequestsList">
+
+          <p>
+            Loading prayer requests...
+          </p>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <script
+    type="module"
+    src="/js/admin/prayer-requests-admin.js"
+  ></script>
+
+</body>
+</html>

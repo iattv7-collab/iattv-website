@@ -1,0 +1,90 @@
+// ======================================================
+// FILE: /firestore.rules
+// PROJECT: IATTV Website
+// PURPOSE:
+// Firestore security rules for public ministry content
+// and the protected IATTV administration system.
+// ======================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --------------------------------------------------
+    // ADMIN AUTHORIZATION
+    // --------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        ).data.active == true;
+    }
+
+    // --------------------------------------------------
+    // ADMINS
+    //
+    // Admin authorization records cannot be created,
+    // changed, or deleted from the public website.
+    // --------------------------------------------------
+
+    match /admins/{userId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // --------------------------------------------------
+    // MESSAGES
+    //
+    // Public can read published messages.
+    // Administrators manage all messages.
+    // --------------------------------------------------
+
+    match /messages/{messageId} {
+      allow read: if resource.data.published == true
+                  || isAdmin();
+
+      allow create, update, delete: if isAdmin();
+    }
+
+    // --------------------------------------------------
+    // SITE SETTINGS
+    //
+    // Public website can read settings.
+    // Only administrators can change them.
+    // --------------------------------------------------
+
+    match /siteSettings/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // --------------------------------------------------
+    // PRAYER REQUESTS
+    //
+    // Anyone may submit a prayer request.
+    // Only administrators may read/manage requests.
+    // --------------------------------------------------
+
+    match /prayerRequests/{requestId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // --------------------------------------------------
+    // DENY EVERYTHING ELSE
+    // --------------------------------------------------
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

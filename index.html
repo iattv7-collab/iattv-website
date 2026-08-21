@@ -1,136 +1,426 @@
-<!DOCTYPE html>
+<!-- ======================================================
+FILE: /index.html
+PROJECT: IATTV Website
+PURPOSE: Main public homepage for IATTV — I Am The True Vine.
+====================================================== -->
+
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IATTV - Ministry</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #0165fc; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        h1, h2 { color: #2c3e50; }
-        p { font-size: 18px; color: #555; }
-        .footer { margin-top: 20px; font-size: 14px; color: #777; }
-        .lang-switch { position: absolute; top: 20px; right: 20px; background: white; padding: 5px 10px; border-radius: 5px; }
-        .section { margin-top: 20px; text-align: left; padding: 10px; }
-        .toggle-button { background: #0165fc; color: white; border: none; cursor: pointer; font-size: 16px; padding: 5px 10px; border-radius: 5px; }
-        .toggle-text { color: #0165fc; cursor: pointer; font-size: 16px; text-decoration: underline; }
-        .hidden-content { display: none; margin-top: 10px; padding: 10px; background: #f4f4f4; border-radius: 5px; }
-        .donate-button-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-        .donate-button img { width: 200px; }
-    </style>
-    <script>
-        function toggleContent(id, element) {
-            var content = document.getElementById(id);
-            if (content.style.display === "none" || content.style.display === "") {
-                content.style.display = "block";
-                element.innerText = "Show Less";
-            } else {
-                content.style.display = "none";
-                element.innerText = "Show More";
-            }
-        }
-    </script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- 🔧 STAGING VERSION BANNER 🔧 -->
-    <div style="
-        background: red;
-        color: white;
-        text-align: center;
-        padding: 12px;
-        font-size: 22px;
-        font-weight: bold;
-        position: sticky;
-        top: 0;
-        z-index: 9999;
-    ">
-        🔧 STAGING VERSION — NOT LIVE 🔧
-    </div>
-    <!-- END BANNER -->
+    <title>IATTV | I Am The True Vine</title>
 
-    <div class="lang-switch">
-        <a href="index-es.html">🇺🇸 Spanish</a>
-    </div>
+    <meta
+      name="description"
+      content="IATTV — I Am The True Vine. Proclaiming Jesus Christ, preaching His Word, making disciples, and reaching people with the Gospel."
+    />
 
-    <div class="container">
-        <h1>Welcome to IATTV</h1>
-        <p>We are dedicated to spreading faith and positivity through our ministry.</p>
-    </div>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
 
-    <div class="container section">
-        <h2>Our Mission</h2>
-        <p>To inspire, uplift, and serve our community with love and faith.</p>
-        <button class="toggle-button" onclick="toggleContent('missionContent', this)">Show More</button>
-        <p>To inspire, uplift, and serve our community with love and faith. 
-            <span class="toggle-text" onclick="toggleContent('missionContent', this)">Show More</span>
-        </p>
-        <div id="missionContent" class="hidden-content">
-            <p>Through our efforts, we aim to bring light and hope to those who need it the most.</p>
-            <p>Through our efforts, we aim to bring light and hope to those who need it the most. Our mission is to provide guidance, support, and a sense of belonging to individuals who seek faith and encouragement.</p>
+  <body>
+    <!-- =========================
+       HEADER
+  ========================== -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="#home" class="brand" aria-label="IATTV Home">
+          <span class="brand-name">IATTV</span>
+          <span class="brand-tagline">I AM THE TRUE VINE</span>
+        </a>
+
+        <button
+          class="mobile-menu-button"
+          id="mobileMenuButton"
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+
+        <nav class="main-nav" id="mainNav">
+          <a href="#home">Home</a>
+          <a href="#messages">Messages</a>
+          <a href="#about">About</a>
+          <a href="#prayer">Prayer</a>
+          <a href="#give">Give</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="header-actions">
+          <a href="#live" class="button button-live"> Join Live Service </a>
+
+          <div class="language-switcher">
+            <button type="button" data-language="en" class="active">EN</button>
+            <span></span>
+            <button type="button" data-language="es">ES</button>
+          </div>
         </div>
-    </div>
+      </div>
+    </header>
 
-    <div class="container section">
-        <h2>Support Our Mission</h2>
-        <p>Your donations help us continue our work.</p>
-        <button class="toggle-button" onclick="toggleContent('supportContent', this)">Show More</button>
-        <p>Your donations help us continue our work. 
-            <span class="toggle-text" onclick="toggleContent('supportContent', this)">Show More</span>
-        </p>
-        <div id="supportContent" class="hidden-content">
-            <p>Click below to contribute and make a difference.</p>
-            <p>By contributing, you enable us to expand our outreach, provide resources, and organize events that bring people together in faith and fellowship.</p>
+    <main>
+      <!-- =========================
+         HERO
+    ========================== -->
+      <section class="hero" id="home">
+        <div class="hero-overlay"></div>
+
+        <div class="hero-content">
+          <div class="hero-message">
+            <p class="hero-ministry-name">I AM THE TRUE VINE</p>
+
+            <h1>
+              <span>JESUS CHRIST</span>
+              <strong>THE TRUE VINE</strong>
+            </h1>
+
+            <div class="vine-divider">
+              <span></span>
+              <span class="vine-symbol">❧</span>
+              <span></span>
+            </div>
+
+            <blockquote>
+              “I am the true vine, and my Father is the husbandman.”
+            </blockquote>
+
+            <p class="scripture-reference">JOHN 15:1</p>
+
+            <p class="jesus-is-lord">JESUS IS LORD</p>
+
+            <div class="hero-buttons">
+              <a href="#messages" class="button button-primary">
+                Watch Messages
+              </a>
+
+              <a href="#live" class="button button-secondary">
+                Join Live Service
+              </a>
+            </div>
+          </div>
+
+          <!-- LIVE SERVICE CARD -->
+          <aside class="live-card" id="live">
+            <p class="live-label">Join Us Live</p>
+
+            <h2>Every Sunday</h2>
+
+            <p class="live-time">10:00 AM (EST)</p>
+
+            <div class="small-divider"></div>
+
+            <p class="live-features">
+              Worship <span>•</span> Word <span>•</span>
+              Prayer
+            </p>
+
+            <a href="#" class="live-card-link"> Join Service </a>
+          </aside>
         </div>
-    </div>
+      </section>
 
-    <div class="container section">
-        <h2>Testimonies</h2>
-        <p>Read how our ministry has impacted lives.</p>
-        <button class="toggle-button" onclick="toggleContent('testimoniesContent', this)">Show More</button>
-        <p>Read how our ministry has impacted lives. 
-            <span class="toggle-text" onclick="toggleContent('testimoniesContent', this)">Show More</span>
-        </p>
-        <div id="testimoniesContent" class="hidden-content">
-            <p>"IATTV changed my life. Their support and guidance helped me through difficult times." - John D.</p>
-            <p>"Being part of this community has brought me closer to my faith." - Maria S.</p>
-            <p>"Being part of this community has brought me closer to my faith and given me a sense of peace." - Maria S.</p>
-            <p>"The prayers and encouragement I received have given me new strength to overcome challenges." - Peter R.</p>
+      <!-- =========================
+   QUICK ACTIONS
+========================== -->
+      <section class="quick-actions">
+        <div class="quick-actions-inner">
+          <article class="action-card">
+            <div class="action-icon gold">▶</div>
+
+            <div>
+              <h2>Latest Messages</h2>
+
+              <p>
+                Watch recent messages and grow in your faith anytime, anywhere.
+              </p>
+
+              <a href="#messages">Watch Now →</a>
+            </div>
+          </article>
+
+          <article class="action-card">
+            <div class="action-icon">♧</div>
+
+            <div>
+              <h2>Prayer Request</h2>
+
+              <p>We believe in the power of prayer. Let us pray with you.</p>
+
+              <a href="#prayer">Send Request →</a>
+            </div>
+          </article>
+
+          <article class="action-card">
+            <div class="action-icon gold">♡</div>
+
+            <div>
+              <h2>Give</h2>
+
+              <p>Partner with us in taking the Gospel to the nations.</p>
+
+              <a href="#give">Give Now →</a>
+            </div>
+          </article>
         </div>
-    </div>
+      </section>
 
-    <div class="donate-button-container">
-        <div id="donate-button"></div>
-        <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
-        <script>
-        PayPal.Donation.Button({
-            env:'production',
-            hosted_button_id:'KRX475LR72CA4',
-            image: {
-                src:'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif',
-                alt:'Donate with PayPal',
-                title:'PayPal - The safer, easier way to pay online!',
-            }
-        }).render('#donate-button');
-        </script>
-    </div>
+      <!-- =========================
+         MISSION
+    ========================== -->
+      <section class="mission-section" id="about">
+        <div class="mission-inner">
+          <div class="mission-content">
+            <p class="section-eyebrow">IATTV MINISTRY</p>
 
-    <div class="container section">
-        <h2>Contact Us</h2>
-        <p>Email: iattv23@gmail.com</p>
-        <button class="toggle-button" onclick="toggleContent('contactContent', this)">Show More</button>
-        <p>Email: iattv23@gmail.com 
-            <span class="toggle-text" onclick="toggleContent('contactContent', this)">Show More</span>
-        </p>
-        <div id="contactContent" class="hidden-content">
-            <p>We are here to support and answer any questions you may have. Reach out anytime!</p>
-            <p>We are here to support and answer any questions you may have. Reach out anytime! Our team is always available to listen, provide guidance, and share resources that can help you in your faith journey.</p>
+            <h2>Our Mission</h2>
+
+            <p>
+              Our mission is to proclaim Jesus Christ, preach His Word, make
+              disciples, and reach people throughout the world with the Gospel.
+            </p>
+
+            <a href="#about-more" class="text-link"> Learn More About Us → </a>
+          </div>
+
+          <div class="mission-scripture">
+            <span class="quote-mark">“</span>
+
+            <blockquote>
+              Abide in me, and I in you. As the branch cannot bear fruit of
+              itself, except it abide in the vine; no more can ye, except ye
+              abide in me.
+            </blockquote>
+
+            <p>JOHN 15:4</p>
+          </div>
+
+          <div class="mission-declaration">
+            <div class="cross-symbol">✝</div>
+
+            <h2>Jesus Is Lord</h2>
+
+            <p>To the glory of God the Father</p>
+          </div>
         </div>
-    </div>
+      </section>
 
-    <div class="footer">&copy; 2025 IATTV - All Rights Reserved.</div>
+      <!-- =========================
+         LATEST MESSAGES
+    ========================== -->
+      <section class="messages-section" id="messages">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">GROW IN THE WORD</p>
 
-</body>
+            <h2>Latest Messages</h2>
+          </div>
+
+          <a href="#" class="text-link"> View All Messages → </a>
+        </div>
+
+        <div class="message-grid" id="latestMessagesGrid">
+          <article class="message-card">
+            <div class="message-image message-image-one">
+              <span class="play-button">▶</span>
+            </div>
+
+            <div class="message-content">
+              <p class="message-reference">John 15:1–8</p>
+              <h3>Abide in the True Vine</h3>
+              <a href="#">Watch Message →</a>
+            </div>
+          </article>
+
+          <article class="message-card">
+            <div class="message-image message-image-two">
+              <span class="play-button">▶</span>
+            </div>
+
+            <div class="message-content">
+              <p class="message-reference">Romans 12:2</p>
+              <h3>The Word That Transforms</h3>
+              <a href="#">Watch Message →</a>
+            </div>
+          </article>
+
+          <article class="message-card">
+            <div class="message-image message-image-three">
+              <span class="play-button">▶</span>
+            </div>
+
+            <div class="message-content">
+              <p class="message-reference">Proverbs 3:5–6</p>
+              <h3>Walking in His Purpose</h3>
+              <a href="#">Watch Message →</a>
+            </div>
+          </article>
+
+          <article class="message-card">
+            <div class="message-image message-image-four">
+              <span class="play-button">▶</span>
+            </div>
+
+            <div class="message-content">
+              <p class="message-reference">John 15:16</p>
+              <h3>Fruit That Remains</h3>
+              <a href="#">Watch Message →</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- =========================
+         PRAYER
+    ========================== -->
+      <section class="prayer-section" id="prayer">
+        <div class="content-narrow">
+          <p class="section-eyebrow">WE BELIEVE IN PRAYER</p>
+
+          <h2>How Can We Pray for You?</h2>
+
+          <p>
+            Whatever you are facing, you do not have to face it alone. Send us
+            your prayer request and allow us to stand with you in faith.
+          </p>
+
+          <a href="#prayer-request" class="button button-primary">
+            Send a Prayer Request
+          </a>
+        </div>
+      </section>
+
+      <!-- =========================
+     PRAYER REQUEST MODAL
+========================== -->
+      <div id="prayerRequestModal" class="prayer-modal" hidden>
+        <div
+          class="prayer-modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="prayerModalTitle"
+        >
+          <button
+            id="closePrayerModal"
+            class="prayer-modal-close"
+            type="button"
+            aria-label="Close prayer request"
+          >
+            ×
+          </button>
+
+          <p class="section-eyebrow">PRAYER REQUEST</p>
+
+          <h2 id="prayerModalTitle">How Can We Pray for You?</h2>
+
+          <p>
+            Share your prayer request with us. Your request will be received by
+            the IATTV ministry.
+          </p>
+
+          <form id="prayerRequestForm">
+            <label for="prayerName"> Name <span>(optional)</span> </label>
+
+            <input id="prayerName" type="text" autocomplete="name" />
+
+            <label for="prayerEmail"> Email <span>(optional)</span> </label>
+
+            <input id="prayerEmail" type="email" autocomplete="email" />
+
+            <label for="prayerPhone"> Phone <span>(optional)</span> </label>
+
+            <input id="prayerPhone" type="tel" autocomplete="tel" />
+
+            <label for="prayerRequest"> Prayer Request </label>
+
+            <textarea id="prayerRequest" rows="6" required></textarea>
+
+            <label class="prayer-confidential">
+              <input id="prayerConfidential" type="checkbox" />
+
+              <span> Please keep this request confidential. </span>
+            </label>
+
+            <button
+              id="prayerSubmitButton"
+              class="button button-primary"
+              type="submit"
+            >
+              Send Prayer Request
+            </button>
+
+            <p
+              id="prayerFormStatus"
+              class="prayer-form-status"
+              aria-live="polite"
+            ></p>
+          </form>
+        </div>
+      </div>
+
+      <!-- =========================
+         GIVE
+    ========================== -->
+      <section class="give-section" id="give">
+        <div class="content-narrow">
+          <p class="section-eyebrow">PARTNER WITH THE MINISTRY</p>
+
+          <h2>Help Take the Gospel Further</h2>
+
+          <p>
+            Your giving helps IATTV continue proclaiming Jesus Christ and
+            sharing the Word of God with people around the world.
+          </p>
+
+          <a href="ofrenda/" class="button button-gold"> Give </a>
+        </div>
+      </section>
+
+      <!-- =========================
+         CONTACT
+    ========================== -->
+      <section class="contact-section" id="contact">
+        <div class="content-narrow">
+          <p class="section-eyebrow">CONNECT WITH IATTV</p>
+
+          <h2>Stay Connected</h2>
+
+          <p>
+            Connect with the ministry for services, messages, prayer, and
+            ministry updates.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- =========================
+       FOOTER
+  ========================== -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <strong>IATTV</strong>
+          <span>I AM THE TRUE VINE</span>
+        </div>
+
+        <p>Jesus Christ — The True Vine</p>
+
+        <p>John 15:1</p>
+      </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script
+      type="module"
+      src="/js/modules/messages/public-messages.js"
+    ></script>
+    <script
+      type="module"
+      src="/js/modules/live-service/public-live-service.js"
+    ></script>
+    <script type="module" src="/js/modules/prayer/public-prayer.js"></script>
+  </body>
 </html>
-
-<!-- test change -->

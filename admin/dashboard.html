@@ -1,0 +1,154 @@
+<!-- ======================================================
+FILE: /admin/dashboard.html
+PROJECT: IATTV Website
+PURPOSE:
+Protected administration dashboard for managing
+IATTV ministry content and website operations.
+====================================================== -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="robots" content="noindex, nofollow" />
+
+    <title>IATTV Admin Dashboard</title>
+
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+
+  <body class="admin-dashboard-body">
+    <!-- Authorization loading screen -->
+    <div id="adminLoading" class="admin-loading">
+      <div class="admin-loading-brand">IATTV</div>
+      <p>Verifying administrator access...</p>
+    </div>
+
+    <!-- Protected application -->
+    <div id="adminApp" class="admin-app" hidden>
+      <header class="admin-header">
+        <div class="admin-header-brand">
+          <div class="admin-header-logo">IATTV</div>
+          <div class="admin-header-label">Ministry Administration</div>
+        </div>
+
+        <div class="admin-header-user">
+          <span id="adminName"></span>
+
+          <button id="signOutButton" class="admin-signout-button" type="button">
+            Sign Out
+          </button>
+        </div>
+      </header>
+
+      <main class="admin-dashboard">
+        <section class="dashboard-intro">
+          <p class="dashboard-eyebrow">IATTV Ministry</p>
+
+          <h1>Administration</h1>
+
+          <p>Manage ministry content, services, prayer requests and giving.</p>
+        </section>
+
+        <section class="dashboard-grid">
+          <a class="dashboard-card" href="/admin/messages.html">
+            <div class="dashboard-card-label">CONTENT</div>
+
+            <h2>Messages</h2>
+
+            <p>Add, edit and publish sermons, teachings and video messages.</p>
+          </a>
+
+          <a class="dashboard-card" href="/admin/live-service.html">
+            <div class="dashboard-card-label">CONTENT</div>
+
+            <h2>Live Service</h2>
+
+            <p>Manage the current service link, schedule and availability.</p>
+          </a>
+
+          <a class="dashboard-card" href="/admin/site-settings.html">
+            <div class="dashboard-card-label">WEBSITE</div>
+
+            <h2>Site Settings</h2>
+
+            <p>
+              Manage editable website information and ministry announcements.
+            </p>
+          </a>
+
+          <a class="dashboard-card" href="/admin/prayer-requests.html">
+            <div class="dashboard-card-label">MINISTRY</div>
+
+            <h2>Prayer Requests</h2>
+
+            <p>
+              Review and manage prayer requests submitted through the website.
+            </p>
+          </a>
+
+          <a class="dashboard-card" href="/admin/giving.html">
+            <div class="dashboard-card-label">GIVING</div>
+
+            <h2>Giving</h2>
+
+            <p>View giving information and manage donation settings.</p>
+          </a>
+
+          <a class="dashboard-card" href="/" target="_blank" rel="noopener">
+            <div class="dashboard-card-label">WEBSITE</div>
+
+            <h2>View Website</h2>
+
+            <p>Open the public IATTV website in a new tab.</p>
+          </a>
+        </section>
+      </main>
+    </div>
+
+    <script type="module">
+      import { auth } from "/js/services/firebase-config.js";
+
+      import { requireAdmin } from "/js/admin/admin-guard.js";
+
+      import { signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+      const loadingEl = document.getElementById("adminLoading");
+
+      const appEl = document.getElementById("adminApp");
+
+      const adminNameEl = document.getElementById("adminName");
+
+      const signOutButton = document.getElementById("signOutButton");
+
+      async function initializeDashboard() {
+        const admin = await requireAdmin();
+
+        if (!admin) {
+          return;
+        }
+
+        adminNameEl.textContent =
+          admin.displayName || admin.email || "Administrator";
+
+        loadingEl.hidden = true;
+        appEl.hidden = false;
+      }
+
+      signOutButton.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+
+          window.location.replace("/admin/");
+        } catch (error) {
+          console.error("IATTV sign-out error:", error);
+        }
+      });
+
+      initializeDashboard();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,326 @@
+<!-- ======================================================
+FILE: /admin/messages.html
+PROJECT: IATTV Website
+PURPOSE:
+Protected administration page for creating, editing,
+publishing and managing IATTV ministry messages.
+====================================================== -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>IATTV Admin | Messages</title>
+
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body class="admin-dashboard-body">
+
+  <!-- Authorization loading -->
+  <div id="adminLoading" class="admin-loading">
+    <div class="admin-loading-brand">IATTV</div>
+    <p>Verifying administrator access...</p>
+  </div>
+
+  <!-- Protected page -->
+  <div id="adminApp" class="admin-app" hidden>
+
+    <header class="admin-header">
+
+      <div class="admin-header-brand">
+        <a
+          href="/admin/dashboard.html"
+          class="admin-header-logo"
+        >
+          IATTV
+        </a>
+
+        <div class="admin-header-label">
+          Ministry Administration
+        </div>
+      </div>
+
+      <div class="admin-header-user">
+        <span id="adminName"></span>
+
+        <button
+          id="signOutButton"
+          class="admin-signout-button"
+          type="button"
+        >
+          Sign Out
+        </button>
+      </div>
+
+    </header>
+
+
+    <main class="admin-dashboard">
+
+      <!-- PAGE HEADER -->
+      <section class="dashboard-intro">
+
+        <p class="dashboard-eyebrow">
+          CONTENT MANAGEMENT
+        </p>
+
+        <h1>Messages</h1>
+
+        <p>
+          Add, edit and publish ministry messages
+          shown on the IATTV website.
+        </p>
+
+      </section>
+
+
+      <!-- MESSAGE FORM -->
+      <section class="admin-panel">
+
+        <div class="admin-panel-heading">
+
+          <div>
+            <p class="dashboard-eyebrow">
+              MESSAGE EDITOR
+            </p>
+
+            <h2 id="formTitle">
+              Add Message
+            </h2>
+          </div>
+
+          <button
+            id="cancelEditButton"
+            class="admin-secondary-button"
+            type="button"
+            hidden
+          >
+            Cancel Edit
+          </button>
+
+        </div>
+
+
+        <form id="messageForm">
+
+          <input
+            id="messageId"
+            type="hidden"
+          >
+
+
+          <div class="admin-form-grid">
+
+            <div class="form-group admin-form-full">
+
+              <label for="youtubeUrl">
+                YouTube Video URL
+              </label>
+
+              <input
+                id="youtubeUrl"
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                required
+              >
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="titleEn">
+                English Title
+              </label>
+
+              <input
+                id="titleEn"
+                type="text"
+                required
+              >
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="titleEs">
+                Spanish Title
+              </label>
+
+              <input
+                id="titleEs"
+                type="text"
+                required
+              >
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="scriptureEn">
+                Scripture Reference
+              </label>
+
+              <input
+                id="scriptureEn"
+                type="text"
+                placeholder="John 15:1–8"
+              >
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="messageDate">
+                Message Date
+              </label>
+
+              <input
+                id="messageDate"
+                type="date"
+                required
+              >
+
+            </div>
+
+
+            <div class="form-group admin-form-full">
+
+              <label for="descriptionEn">
+                English Description
+              </label>
+
+              <textarea
+                id="descriptionEn"
+                rows="4"
+                placeholder="Optional short description"
+              ></textarea>
+
+            </div>
+
+
+            <div class="form-group admin-form-full">
+
+              <label for="descriptionEs">
+                Spanish Description
+              </label>
+
+              <textarea
+                id="descriptionEs"
+                rows="4"
+                placeholder="Descripción corta opcional"
+              ></textarea>
+
+            </div>
+
+
+            <div class="form-group admin-form-full">
+
+              <label class="admin-checkbox-row">
+
+                <input
+                  id="published"
+                  type="checkbox"
+                  checked
+                >
+
+                <span>
+                  Publish this message on the website
+                </span>
+
+              </label>
+
+            </div>
+
+          </div>
+
+
+          <div class="admin-form-actions">
+
+            <button
+              id="saveMessageButton"
+              class="admin-login-button admin-form-submit"
+              type="submit"
+            >
+              Publish Message
+            </button>
+
+            <p
+              id="messageFormStatus"
+              class="login-message"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+        </form>
+
+      </section>
+
+
+      <!-- EXISTING MESSAGES -->
+      <section class="admin-panel">
+
+        <div class="admin-panel-heading">
+
+          <div>
+            <p class="dashboard-eyebrow">
+              PUBLISHED CONTENT
+            </p>
+
+            <h2>
+              Existing Messages
+            </h2>
+          </div>
+
+        </div>
+
+
+        <div
+          id="messagesLoading"
+          class="admin-empty-state"
+        >
+          Loading messages...
+        </div>
+
+
+        <div
+          id="messagesEmpty"
+          class="admin-empty-state"
+          hidden
+        >
+          No messages have been added yet.
+        </div>
+
+
+        <div
+          id="messagesList"
+          class="admin-message-list"
+        ></div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <script
+    type="module"
+    src="/js/admin/messages-admin.js"
+  ></script>
+
+</body>
+</html>

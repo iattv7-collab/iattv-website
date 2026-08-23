@@ -1,0 +1,202 @@
+<!-- ======================================================
+FILE: /admin/giving.html
+PROJECT: IATTV Website
+PURPOSE:
+Protected administration page for managing
+IATTV giving / offering payment methods.
+====================================================== -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>IATTV Admin | Giving</title>
+
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body class="admin-dashboard-body">
+
+  <div id="adminLoading" class="admin-loading">
+    <div class="admin-loading-brand">IATTV</div>
+    <p>Verifying administrator access...</p>
+  </div>
+
+  <div id="adminApp" class="admin-app" hidden>
+
+    <header class="admin-header">
+
+      <div class="admin-header-brand">
+        <a href="/admin/dashboard.html" class="admin-header-logo">
+          IATTV
+        </a>
+        <div class="admin-header-label">
+          Ministry Administration
+        </div>
+      </div>
+
+      <div class="admin-header-user">
+        <span id="adminName"></span>
+        <button id="signOutButton" class="admin-signout-button" type="button">
+          Sign Out
+        </button>
+      </div>
+
+    </header>
+
+    <main class="admin-dashboard">
+
+      <section class="dashboard-intro">
+        <p class="dashboard-eyebrow">GIVING</p>
+        <h1>Giving Methods</h1>
+        <p>
+          Manage the payment methods shown on the public Give page.
+          Enable, disable, edit, or reorder methods without changing code.
+        </p>
+      </section>
+
+      <!-- ==================================================
+           ADD / EDIT METHOD
+      =================================================== -->
+      <section class="admin-panel">
+
+        <div class="admin-panel-heading">
+          <div>
+            <p class="dashboard-eyebrow">METHOD</p>
+            <h2 id="formTitle">Add Giving Method</h2>
+          </div>
+        </div>
+
+        <form id="givingMethodForm">
+
+          <input type="hidden" id="methodId" value="">
+
+          <div class="admin-form-grid">
+
+            <div class="form-group">
+              <label for="label">Display Label</label>
+              <input
+                id="label"
+                type="text"
+                placeholder="PayPal"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="name">Internal Name</label>
+              <input
+                id="name"
+                type="text"
+                placeholder="paypal"
+                required
+              >
+            </div>
+
+            <div class="form-group admin-form-full">
+              <label for="description">Description / Instructions</label>
+              <textarea
+                id="description"
+                rows="3"
+                placeholder="Give securely using your PayPal account."
+              ></textarea>
+            </div>
+
+            <div class="form-group admin-form-full">
+              <label for="url">Payment URL or Identifier</label>
+              <input
+                id="url"
+                type="text"
+                placeholder="https://paypal.me/yourlink or $Cashtag"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="order">Display Order</label>
+              <input
+                id="order"
+                type="number"
+                min="0"
+                step="1"
+                value="0"
+              >
+            </div>
+
+            <div class="form-group admin-form-full">
+              <label class="admin-checkbox-row">
+                <input id="enabled" type="checkbox" checked>
+                <span>Enabled (show on public Give page)</span>
+              </label>
+            </div>
+
+            <div class="form-group admin-form-full">
+              <label class="admin-checkbox-row">
+                <input id="openExternal" type="checkbox" checked>
+                <span>Open in new tab</span>
+              </label>
+            </div>
+
+          </div>
+
+          <div class="admin-form-actions">
+            <button
+              id="saveButton"
+              class="admin-login-button admin-form-submit"
+              type="submit"
+            >
+              Save Method
+            </button>
+
+            <button
+              id="cancelEditButton"
+              class="admin-signout-button"
+              type="button"
+              hidden
+            >
+              Cancel Edit
+            </button>
+
+            <p id="formStatus" class="login-message" aria-live="polite"></p>
+          </div>
+
+        </form>
+
+      </section>
+
+      <!-- ==================================================
+           EXISTING METHODS
+      =================================================== -->
+      <section class="admin-panel">
+
+        <div class="admin-panel-heading">
+          <div>
+            <p class="dashboard-eyebrow">CURRENT METHODS</p>
+            <h2>Payment Methods</h2>
+          </div>
+          <div id="methodCount"></div>
+        </div>
+
+        <p id="pageStatus" class="login-message" aria-live="polite"></p>
+
+        <div id="methodsList">
+          <p>Loading methods...</p>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script type="module" src="/js/admin/giving-admin.js"></script>
+
+</body>
+</html>

@@ -79,6 +79,18 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+        // --------------------------------------------------
+    // GIVING METHODS
+    //
+    // Public can read enabled methods.
+    // Only administrators can create, update, or delete.
+    // --------------------------------------------------
+
+    match /givingMethods/{methodId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // --------------------------------------------------
     // DENY EVERYTHING ELSE
     // --------------------------------------------------

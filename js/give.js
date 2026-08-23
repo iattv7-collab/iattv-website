@@ -1,159 +1,99 @@
-/* ======================================================
-FILE: /js/give.js
-PROJECT: IATTV Website
-PURPOSE:
-Controls the public IATTV giving interface including
-giving frequency, amount selection, custom amounts,
-payment method selection, and gift summary.
-====================================================== */
+// ======================================================
+// FILE: /js/give.js
+// PROJECT: IATTV Website
+// PURPOSE:
+// Loads enabled giving methods from Firestore and
+// opens the selected payment method.
+// ======================================================
+
+import {
+  getEnabledGivingMethods,
+} from "/js/services/giving-methods-service.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const frequencyButtons = document.querySelectorAll(
-    ".frequency-button"
-  );
+  const paymentMethodsContainer = document.getElementById("paymentMethods");
 
-  const amountButtons = document.querySelectorAll(
-    ".amount-button"
-  );
+  function escapeHtml(value) {
+    return String(value || "").replace(
+      /[&<>"']/g,
+      (character) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;",
+        })[character],
+    );
+  }
 
-  const customAmountInput =
-    document.getElementById("customAmount");
+  function getMethodIcon(name) {
+    const key = String(name || "").toLowerCase();
 
-  const paymentMethods = document.querySelectorAll(
-    ".payment-method"
-  );
+    if (key.includes("paypal")) return "P";
+    if (key.includes("zelle")) return "Z";
+    if (key.includes("cash")) return "$";
+    if (key.includes("wise")) return "W";
+    return "◆";
+  }
 
-  const selectedGiftAmount =
-    document.getElementById("selectedGiftAmount");
-
-  const selectedGiftFrequency =
-    document.getElementById("selectedGiftFrequency");
-
-  let selectedFrequency = "one-time";
-  let selectedAmount = null;
-  let selectedPaymentMethod = null;
-
-
-  /* ====================================================
-     FREQUENCY
-  ==================================================== */
-
-  frequencyButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      frequencyButtons.forEach((item) => {
-        item.classList.remove("active");
-      });
-
-      button.classList.add("active");
-
-      selectedFrequency = button.dataset.frequency;
-
-      updateSummary();
-    });
-  });
-
-
-  /* ====================================================
-     PRESET AMOUNTS
-  ==================================================== */
-
-  amountButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      amountButtons.forEach((item) => {
-        item.classList.remove("active");
-      });
-
-      button.classList.add("active");
-
-      customAmountInput.value = "";
-
-      selectedAmount = Number(button.dataset.amount);
-
-      updateSummary();
-    });
-  });
-
-
-  /* ====================================================
-     CUSTOM AMOUNT
-  ==================================================== */
-
-  customAmountInput.addEventListener("input", () => {
-    amountButtons.forEach((button) => {
-      button.classList.remove("active");
-    });
-
-    const amount = Number(customAmountInput.value);
-
-    if (amount > 0) {
-      selectedAmount = amount;
-    } else {
-      selectedAmount = null;
+  function renderPaymentMethods(methods) {
+    if (!methods.length) {
+      paymentMethodsContainer.innerHTML =
+        "<p>No giving methods are currently available.</p>";
+      return;
     }
 
-    updateSummary();
-  });
+    paymentMethodsContainer.innerHTML = methods
+      .map((method) => {
+        const icon = getMethodIcon(method.name || method.label);
+        const label = escapeHtml(method.label || method.name || "Give");
+        const description = escapeHtml(
+          method.description || "Click to continue.",
+        );
 
+        return `
+          <button
+            type="button"
+            class="payment-method"
+            data-url="${escapeHtml(method.url || "")}"
+            data-open-external="${method.openExternal !== false}"
+          >
+            <span class="payment-icon">${icon}</span>
+            <span class="payment-name">${label}</span>
+            <span class="payment-provider">${description}</span>
+          </button>
+        `;
+      })
+      .join("");
+  }
 
-  /* ====================================================
-     PAYMENT METHOD
-  ==================================================== */
+  paymentMethodsContainer.addEventListener("click", (event) => {
+    const button = event.target.closest(".payment-method");
+    if (!button) return;
 
-  paymentMethods.forEach((button) => {
-    button.addEventListener("click", () => {
-      paymentMethods.forEach((item) => {
-        item.classList.remove("active");
-      });
+    const url = button.dataset.url;
+    const openExternal = button.dataset.openExternal !== "false";
 
-      button.classList.add("active");
+    if (!url) return;
 
-      selectedPaymentMethod = button.dataset.method;
-
-      console.log(
-        "Selected payment method:",
-        selectedPaymentMethod
-      );
-    });
-  });
-
-
-  /* ====================================================
-     SUMMARY
-  ==================================================== */
-
-  function updateSummary() {
-    if (selectedAmount) {
-      selectedGiftAmount.textContent =
-        formatCurrency(selectedAmount);
+    if (openExternal) {
+      window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      selectedGiftAmount.textContent =
-        "Select an amount";
+      window.location.href = url;
     }
+  });
 
-    if (selectedFrequency === "monthly") {
-      selectedGiftFrequency.textContent = "Monthly";
-    } else {
-      selectedGiftFrequency.textContent = "One-Time";
+  async function loadMethods() {
+    try {
+      const methods = await getEnabledGivingMethods();
+      renderPaymentMethods(methods);
+    } catch (error) {
+      console.error("Unable to load giving methods:", error);
+      paymentMethodsContainer.innerHTML =
+        "<p>Unable to load giving methods at this time.</p>";
     }
   }
 
-
-  /* ====================================================
-     CURRENCY FORMATTER
-  ==================================================== */
-
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2
-    }).format(amount);
-  }
-
-
-  /* ====================================================
-     INITIAL STATE
-  ==================================================== */
-
-  updateSummary();
+  loadMethods();
 });

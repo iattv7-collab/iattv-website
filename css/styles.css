@@ -288,18 +288,31 @@ p {
 
 .hero {
     position: relative;
-    min-height: 610px;
-    overflow: hidden;
+    min-height: 0;
+    overflow: visible;
+    padding-bottom: 0;
+    background: none;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 610px;
+    z-index: 0;
+    pointer-events: none;
 
     background:
-  linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.00) 0%,
-    rgba(255, 255, 255, 0.68) 30%,
-    rgba(255, 255, 255, 0.10) 52%,
-    rgba(255, 255, 255, 0.00) 72%
-  ),
-  url("../assets/images/hero-vineyard.png");
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.00) 0%,
+        rgba(255, 255, 255, 0.68) 30%,
+        rgba(255, 255, 255, 0.10) 52%,
+        rgba(255, 255, 255, 0.00) 72%
+      ),
+      url("../assets/images/hero-vineyard.png");
 
     background-size: cover;
     background-position: center;
@@ -325,7 +338,7 @@ p {
     width: min(92%, var(--max-width));
     min-height: 610px;
     margin: 0 auto;
-    padding: 75px 0;
+    padding: 80px 0;
 
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(290px, 0.75fr);
@@ -519,7 +532,7 @@ p {
     z-index: 5;
 
     width: min(94%, var(--max-width));
-    margin: -35px auto 0;
+    margin: -75px auto 0;
 
     border-radius: 12px;
     background: var(--white);
@@ -1155,6 +1168,24 @@ p {
         flex-direction: column;
         text-align: center;
     }
+    
+        .language-switcher {
+        position: relative;
+        z-index: 1100;
+        gap: 4px;
+    }
+
+    .language-switcher button {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 8px;
+    }
+
+    .header-actions {
+        width: auto;
+        margin-left: auto;
+        gap: 10px;
+    }
 
 }
 
@@ -1268,5 +1299,57 @@ body.modal-open {
 
   .prayer-modal-card {
     padding: 28px 20px;
+  }
+}
+
+/* ======================================================
+   MORE FROM THE MINISTRY
+====================================================== */
+
+.ministry-links {
+  width: 100%;
+  margin: 0;
+  padding: 36px 0 20px;
+  background: var(--soft-cream);
+}
+
+.ministry-links-inner {
+  width: min(94%, var(--max-width));
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ministry-links .section-eyebrow {
+  margin-bottom: 16px;
+}
+
+.ministry-links-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ministry-link-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 24px 26px;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.ministry-link-card h2 {
+  margin: 0 0 6px;
+}
+
+.ministry-link-card p {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 700px) {
+  .ministry-links-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -261,7 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // LIVE CARD
     setText(".live-label", t.liveLabel);
     setText(".live-card h2", t.liveDay);
-    setText(".live-time", t.liveTime);
     setHtml(".live-features", t.liveFeatures);
     setText(".live-card-link", t.joinService);
 

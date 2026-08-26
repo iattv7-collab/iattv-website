@@ -1,0 +1,175 @@
+<!-- ======================================================
+FILE: /admin/give-2.html
+PROJECT: IATTV Website
+PURPOSE:
+Protected Give 2 administration for funds foundation.
+Separate from the existing Giving / Ofrenda module.
+====================================================== -->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>IATTV Admin | Give 2</title>
+    <link rel="stylesheet" href="/css/admin.css" />
+</head>
+
+<body class="admin-dashboard-body">
+    <div id="adminLoading" class="admin-loading">
+        <div class="admin-loading-brand">IATTV</div>
+        <p>Verifying administrator access...</p>
+    </div>
+
+    <div id="adminApp" class="admin-app" hidden>
+        <header class="admin-header">
+            <div class="admin-header-brand">
+                <a href="/admin/dashboard.html" class="admin-header-logo">IATTV</a>
+                <div class="admin-header-label">Ministry Administration</div>
+            </div>
+
+            <div class="admin-header-user">
+                <span id="adminName"></span>
+                <button id="signOutButton" class="admin-signout-button" type="button">
+                    Sign Out
+                </button>
+            </div>
+        </header>
+
+        <main class="admin-dashboard">
+            <section class="dashboard-intro">
+                <p class="dashboard-eyebrow">GIVING SYSTEM</p>
+                <h1>Give 2</h1>
+                <p>
+                    Manage giving funds for the new IATTV ledger. This module is
+                    separate from the existing Giving page and Ofrenda system.
+                </p>
+            </section>
+
+            <!-- GIVING SETTINGS -->
+            <section class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">SETTINGS</p>
+                        <h2>Giving Settings</h2>
+                    </div>
+                </div>
+
+                <form id="settingsForm">
+                    <div class="admin-form-grid">
+                        <div class="form-group">
+                            <label for="settingsCurrency">Default Currency</label>
+                            <input id="settingsCurrency" type="text" value="USD" maxlength="3" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="admin-checkbox-row" style="margin-top: 28px">
+                                <input id="settingsEnabled" type="checkbox" checked />
+                                <span>Give 2 module enabled (admin)</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group admin-form-full">
+                            <label for="settingsStatementNote">
+                                Statement note (shown on donor statements later)
+                            </label>
+                            <textarea id="settingsStatementNote" rows="3"
+                                placeholder="This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-actions">
+                        <button id="saveSettingsButton" class="admin-login-button admin-form-submit" type="submit">
+                            Save Settings
+                        </button>
+
+                        <p id="settingsFormStatus" class="login-message" aria-live="polite"></p>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ADD / EDIT FUND -->
+            <section class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">FUNDS</p>
+                        <h2 id="fundFormTitle">Add Fund</h2>
+                    </div>
+
+                    <button id="cancelFundEditButton" class="admin-secondary-button" type="button" hidden>
+                        Cancel Edit
+                    </button>
+                </div>
+
+                <form id="fundForm">
+                    <input id="fundId" type="hidden" />
+
+                    <div class="admin-form-grid">
+                        <div class="form-group">
+                            <label for="fundName">Fund Name</label>
+                            <input id="fundName" type="text" placeholder="General" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fundOrder">Display Order</label>
+                            <input id="fundOrder" type="number" min="0" step="1" value="0" />
+                        </div>
+
+                        <div class="form-group admin-form-full">
+                            <label for="fundDescription">Description (optional)</label>
+                            <textarea id="fundDescription" rows="3"
+                                placeholder="Short description for admin use"></textarea>
+                        </div>
+
+                        <div class="form-group admin-form-full">
+                            <label class="admin-checkbox-row">
+                                <input id="fundActive" type="checkbox" checked />
+                                <span>Active</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-actions">
+                        <button id="saveFundButton" class="admin-login-button admin-form-submit" type="submit">
+                            Save Fund
+                        </button>
+
+                        <p id="fundFormStatus" class="login-message" aria-live="polite"></p>
+                    </div>
+                </form>
+            </section>
+
+            <!-- EXISTING FUNDS -->
+            <section class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">LEDGER FOUNDATION</p>
+                        <h2>Existing Funds</h2>
+                    </div>
+                </div>
+
+                <div id="fundsLoading" class="admin-empty-state">
+                    Loading funds...
+                </div>
+
+                <div id="fundsEmpty" class="admin-empty-state" hidden>
+                    No funds have been created yet.
+                </div>
+
+                <div id="fundsList" class="admin-message-list"></div>
+            </section>
+
+            <p style="margin-top: 20px">
+                <a href="/admin/dashboard.html" class="admin-secondary-button">
+                    ← Back to Dashboard
+                </a>
+            </p>
+        </main>
+    </div>
+
+    <script type="module" src="/js/admin/give-2.js"></script>
+</body>
+
+</html>

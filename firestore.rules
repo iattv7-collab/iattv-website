@@ -86,9 +86,36 @@ service cloud.firestore {
     // Only administrators can create, update, or delete.
     // --------------------------------------------------
 
-    match /givingMethods/{methodId} {
+        match /givingMethods/{methodId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+
+    // --------------------------------------------------
+    // GIVE 2 — FINANCIAL DATA (ADMIN ONLY)
+    //
+    // No public read yet. Public fund visibility will be
+    // decided when the /give-2/ public page is built.
+    // --------------------------------------------------
+
+    match /givingFunds/{fundId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /givingSettings/{documentId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /donors/{donorId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /donations/{donationId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /stripeEvents/{eventId} {
+      allow read, create, update, delete: if isAdmin();
     }
 
     // --------------------------------------------------

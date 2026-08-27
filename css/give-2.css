@@ -1,0 +1,112 @@
+/* ======================================================
+FILE: /css/give-2.css
+PROJECT: IATTV Website
+PURPOSE:
+Styles for the public Give 2 page shell.
+====================================================== */
+
+.give2-page {
+  background: var(--soft-cream, #faf6ed);
+  padding: 40px 4% 80px;
+}
+
+.give2-card {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 36px 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.give2-card h1 {
+  margin: 0 0 10px;
+  color: var(--royal-blue);
+}
+
+.give2-intro,
+.give2-note {
+  color: var(--text-soft);
+}
+
+.give2-group {
+  margin: 28px 0;
+}
+
+.give2-group h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  color: var(--royal-blue);
+}
+
+.give2-toggle,
+.give2-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.give2-freq,
+.give2-amount {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.give2-freq.active,
+.give2-amount.active {
+  background: var(--royal-blue);
+  color: #fff;
+  border-color: var(--royal-blue);
+}
+
+.give2-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.give2-custom input,
+.give2-group input,
+.give2-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccd3df;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.give2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.give2-full {
+  grid-column: 1 / -1;
+}
+
+.give2-submit {
+  width: 100%;
+}
+
+.give2-status {
+  min-height: 24px;
+  margin-top: 12px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .give2-card {
+    padding: 24px 18px;
+  }
+
+  .give2-grid {
+    grid-template-columns: 1fr;
+  }
+}

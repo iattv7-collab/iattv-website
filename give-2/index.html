@@ -1,0 +1,140 @@
+<!-- ======================================================
+FILE: /give-2/index.html
+PROJECT: IATTV Website
+PURPOSE:
+Public Give 2 page shell. Separate from /give/ and /ofrenda/.
+Does not process payments yet.
+====================================================== -->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Give 2 | IATTV</title>
+    <meta name="description" content="Give to IATTV. Partner with the ministry through a one-time or monthly gift." />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/give-2.css" />
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="brand" aria-label="IATTV Home">
+                <span class="brand-name">IATTV</span>
+                <span class="brand-tagline">I AM THE TRUE VINE</span>
+            </a>
+
+            <button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="Open navigation"
+                aria-expanded="false">
+                ☰
+            </button>
+
+            <nav class="main-nav" id="mainNav">
+                <a href="/#home">Home</a>
+                <a href="/#messages">Messages</a>
+                <a href="/#about">About</a>
+                <a href="/#prayer">Prayer</a>
+                <a href="/ofrenda/">Give</a>
+                <a href="/#contact">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/#live" class="button button-live">Join Live Service</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="give2-page">
+        <section class="give2-section">
+            <div class="give2-card">
+                <p class="section-eyebrow">GIVE TO IATTV</p>
+                <h1>Partner With the Ministry</h1>
+                <p class="give2-intro">
+                    Choose an amount, frequency, and fund. Payment processing will be
+                    added next. No card information is collected on this page.
+                </p>
+
+                <form id="give2Form">
+                    <div class="give2-group">
+                        <h2>Frequency</h2>
+                        <div class="give2-toggle" role="group" aria-label="Frequency">
+                            <button type="button" class="give2-freq active" data-frequency="one-time">
+                                One-Time
+                            </button>
+                            <button type="button" class="give2-freq" data-frequency="monthly">
+                                Monthly
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="give2-group">
+                        <h2>Gift Amount</h2>
+                        <label for="customAmount">Enter the amount you would like to give</label>
+                        <div class="give2-custom">
+                            <span>$</span>
+                            <input id="customAmount" type="number" min="1" step="1" inputmode="decimal"
+                                placeholder="0.00" required />
+                        </div>
+                    </div>
+
+                    <div class="give2-group">
+                        <h2>Fund</h2>
+                        <select id="fundSelect" required>
+                            <option value="">Loading funds...</option>
+                        </select>
+                    </div>
+
+                    <div class="give2-group">
+                        <h2>Your Information</h2>
+                        <div class="give2-grid">
+                            <div>
+                                <label for="firstName">First name</label>
+                                <input id="firstName" type="text" required autocomplete="given-name" />
+                            </div>
+                            <div>
+                                <label for="lastName">Last name</label>
+                                <input id="lastName" type="text" required autocomplete="family-name" />
+                            </div>
+                            <div class="give2-full">
+                                <label for="email">Email</label>
+                                <input id="email" type="email" required autocomplete="email" />
+                            </div>
+                            <div class="give2-full">
+                                <label for="phone">Phone (optional)</label>
+                                <input id="phone" type="tel" autocomplete="tel" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="button button-gold give2-submit" type="submit">
+                        Continue to Give
+                    </button>
+
+                    <p id="give2Status" class="give2-status" aria-live="polite"></p>
+                    <p class="give2-note">
+                        Secure payment with Stripe will be connected in the next step.
+                        IATTV does not collect card numbers on this page.
+                    </p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <strong>IATTV</strong>
+                <span>I AM THE TRUE VINE</span>
+            </div>
+            <p>Jesus Christ — The True Vine</p>
+            <p>John 15:1</p>
+        </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script type="module" src="/js/modules/give-2/public-give.js"></script>
+</body>
+
+</html>

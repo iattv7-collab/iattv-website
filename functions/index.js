@@ -4,8 +4,7 @@
 // PURPOSE:
 // Firebase Cloud Functions for IATTV.
 // Sends public prayer requests by email using Resend.
-// The destination email is controlled by the IATTV
-// administrator through Firestore site settings.
+// Provides Give 2 statement lookup by email and date range.
 // ======================================================
 
 const {
@@ -23,126 +22,52 @@ const {
 
 const admin = require("firebase-admin");
 
-
-// ======================================================
-// INITIALIZE
-// ======================================================
-
 admin.initializeApp();
 
 const db = admin.firestore();
 
-const RESEND_API_KEY =
-  defineSecret("RESEND_API_KEY");
+const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 
 setGlobalOptions({
   maxInstances: 10,
 });
 
-
-// ======================================================
-// HELPERS
-// ======================================================
-
-/**
- * Cleans and limits user-provided text.
- * @param {*} value Value to clean.
- * @param {number} maxLength Maximum allowed length.
- * @return {string} Cleaned text.
- */
-function clean(value, maxLength = 5000) {
-  return String(value || "")
-      .trim()
-      .slice(0, maxLength);
+function clean(value, maxLength) {
+  const limit = maxLength || 5000;
+  return String(value || "").trim().slice(0, limit);
 }
 
-
-/**
- * Validates an optional email address.
- * @param {string} value Email address.
- * @return {boolean} Whether the email is valid.
- */
 function validEmail(value) {
   if (!value) {
     return true;
   }
-
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      value,
-  );
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-
-/**
- * Escapes text for safe HTML output.
- * @param {*} value Value to escape.
- * @return {string} Escaped HTML text.
- */
 function escapeHtml(value) {
-  return String(value || "").replace(
-      /[&<>"']/g,
-      (character) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "\"": "&quot;",
-        "'": "&#039;",
-      })[character],
-  );
+  return String(value || "").replace(/[&<>"']/g, (character) => {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#039;",
+    }[character];
+  });
 }
-
-
-// ======================================================
-// SEND PRAYER REQUEST
-// ======================================================
 
 exports.sendPrayerRequest = onCall(
     {
-      secrets: [
-        RESEND_API_KEY,
-      ],
+      secrets: [RESEND_API_KEY],
     },
-
     async (request) => {
-      const data =
-      request.data || {};
+      const data = request.data || {};
 
-
-      // ==================================================
-      // CLEAN PUBLIC INPUT
-      // ==================================================
-
-      const name =
-      clean(
-          data.name,
-          150,
-      );
-
-      const email =
-      clean(
-          data.email,
-          254,
-      );
-
-      const phone =
-      clean(
-          data.phone,
-          50,
-      );
-
-      const prayerRequest =
-      clean(
-          data.request,
-          5000,
-      );
-
-      const confidential =
-      data.confidential === true;
-
-
-      // ==================================================
-      // VALIDATION
-      // ==================================================
+      const name = clean(data.name, 150);
+      const email = clean(data.email, 254);
+      const phone = clean(data.phone, 50);
+      const prayerRequest = clean(data.request, 5000);
+      const confidential = data.confidential === true;
 
       if (!prayerRequest) {
         throw new HttpsError(
@@ -158,19 +83,9 @@ exports.sendPrayerRequest = onCall(
         );
       }
 
-
-      // ==================================================
-      // GET ADMIN-CONTROLLED DESTINATION
-      // ==================================================
-
-      const settingsSnapshot =
-      await db
-          .collection(
-              "siteSettings",
-          )
-          .doc(
-              "prayerRequests",
-          )
+      const settingsSnapshot = await db
+          .collection("siteSettings")
+          .doc("prayerRequests")
           .get();
 
       if (!settingsSnapshot.exists) {
@@ -180,220 +95,160 @@ exports.sendPrayerRequest = onCall(
         );
       }
 
-      const settings =
-      settingsSnapshot.data() || {};
+      const settings = settingsSnapshot.data() || {};
+      const recipientEmail = clean(settings.recipientEmail, 254);
 
-      const recipientEmail =
-      clean(
-          settings.recipientEmail,
-          254,
-      );
-
-      if (
-        !recipientEmail ||
-      !validEmail(recipientEmail)
-      ) {
+      if (!recipientEmail || !validEmail(recipientEmail)) {
         throw new HttpsError(
             "failed-precondition",
             "Prayer request destination is not configured correctly.",
         );
       }
 
-
-      // ==================================================
-      // BUILD EMAIL
-      // ==================================================
-
-      const displayName =
-      name || "Anonymous";
-
-      const subject =
-      confidential ?
+      const displayName = name || "Anonymous";
+      const subject = confidential ?
         "Confidential Prayer Request - IATTV" :
         "New Prayer Request - IATTV";
 
-      const confidentialSection =
-      confidential ?
-        `
-          <p>
-            <strong>
-              CONFIDENTIAL PRAYER REQUEST
-            </strong>
-          </p>
-        ` :
+      const confidentialSection = confidential ?
+        "<p><strong>CONFIDENTIAL PRAYER REQUEST</strong></p>" :
         "";
 
-      const emailSection =
-      email ?
-        `
-          <p>
-            <strong>Email:</strong>
-            ${escapeHtml(email)}
-          </p>
-        ` :
+      const emailSection = email ?
+        "<p><strong>Email:</strong> " + escapeHtml(email) + "</p>" :
         "";
 
-      const phoneSection =
-      phone ?
-        `
-          <p>
-            <strong>Phone:</strong>
-            ${escapeHtml(phone)}
-          </p>
-        ` :
+      const phoneSection = phone ?
+        "<p><strong>Phone:</strong> " + escapeHtml(phone) + "</p>" :
         "";
 
-      const html = `
-      <div
-        style="
-          font-family: Arial, sans-serif;
-          line-height: 1.6;
-          color: #222222;
-          max-width: 700px;
-        "
-      >
-
-        <h2
-          style="
-            color: #003399;
-          "
-        >
-          IATTV Prayer Request
-        </h2>
-
-        ${confidentialSection}
-
-        <p>
-          <strong>Name:</strong>
-          ${escapeHtml(displayName)}
-        </p>
-
-        ${emailSection}
-
-        ${phoneSection}
-
-        <hr>
-
-        <p>
-          <strong>Prayer Request:</strong>
-        </p>
-
-        <p
-          style="
-            white-space: pre-wrap;
-          "
-        >${escapeHtml(prayerRequest)}</p>
-
-        <hr>
-
-        <p
-          style="
-            font-size: 12px;
-            color: #666666;
-          "
-        >
-          Submitted through the IATTV website.
-        </p>
-
-      </div>
-    `;
-
-
-      // ==================================================
-      // BUILD RESEND PAYLOAD
-      // ==================================================
+      const html =
+        "<div style=\"font-family:Arial,sans-serif;line-height:1.6;color:#222;max-width:700px\">" +
+        "<h2 style=\"color:#003399\">IATTV Prayer Request</h2>" +
+        confidentialSection +
+        "<p><strong>Name:</strong> " + escapeHtml(displayName) + "</p>" +
+        emailSection +
+        phoneSection +
+        "<hr><p><strong>Prayer Request:</strong></p>" +
+        "<p style=\"white-space:pre-wrap\">" + escapeHtml(prayerRequest) + "</p>" +
+        "<hr><p style=\"font-size:12px;color:#666\">Submitted through the IATTV website.</p>" +
+        "</div>";
 
       const resendPayload = {
         from: "IATTV Prayer Requests <prayer@iattv.org>",
-
-        to: [
-          recipientEmail,
-        ],
-
-        subject,
-
-        html,
+        to: [recipientEmail],
+        subject: subject,
+        html: html,
       };
 
       if (email) {
-        resendPayload.reply_to =
-        email;
+        resendPayload.reply_to = email;
       }
-
-
-      // ==================================================
-      // SEND THROUGH RESEND
-      // ==================================================
 
       let resendResponse;
 
       try {
-        resendResponse =
-        await fetch(
-            "https://api.resend.com/emails",
-            {
-              method: "POST",
-
-              headers: {
-                "Authorization":
-                `Bearer ${RESEND_API_KEY.value()}`,
-
-                "Content-Type":
-                "application/json",
-              },
-
-              body:
-              JSON.stringify(
-                  resendPayload,
-              ),
-            },
-        );
+        resendResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + RESEND_API_KEY.value(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(resendPayload),
+        });
       } catch (error) {
-        console.error(
-            "Unable to contact Resend:",
-            error,
-        );
-
+        console.error("Unable to contact Resend:", error);
         throw new HttpsError(
             "internal",
             "Unable to send the prayer request.",
         );
       }
 
-
-      // ==================================================
-      // VERIFY RESEND RESPONSE
-      // ==================================================
-
       if (!resendResponse.ok) {
-        const errorText =
-        await resendResponse.text();
-
+        const errorText = await resendResponse.text();
         console.error(
             "Resend rejected prayer request email:",
             resendResponse.status,
             errorText,
         );
-
         throw new HttpsError(
             "internal",
             "Unable to send the prayer request.",
         );
       }
 
-      const result =
-      await resendResponse.json();
+      const result = await resendResponse.json();
+      console.log("Prayer request email sent.", {
+        resendId: result.id || "",
+      });
 
-      console.log(
-          "Prayer request email sent.",
-          {
-            resendId:
-          result.id || "",
-          },
-      );
-
-      return {
-        success: true,
-      };
+      return {success: true};
     },
 );
+
+exports.getGive2Statement = onCall(async (request) => {
+  const data = request.data || {};
+  const email = clean(data.email, 254).toLowerCase();
+  const fromDate = clean(data.fromDate, 10);
+  const toDate = clean(data.toDate, 10);
+
+  if (!email || !validEmail(email)) {
+    throw new HttpsError(
+        "invalid-argument",
+        "A valid email is required.",
+    );
+  }
+
+  if (!fromDate || !toDate) {
+    throw new HttpsError(
+        "invalid-argument",
+        "A date range is required.",
+    );
+  }
+
+  const snapshot = await db.collection("donations").get();
+
+  const gifts = snapshot.docs.map((item) => {
+    const row = item.data() || {};
+    return {
+      giftDate: String(row.giftDate || ""),
+      fundName: String(row.fundNameSnapshot || ""),
+      amount: Number(row.amount || 0),
+      frequency: String(row.frequency || "one-time"),
+      paymentMethod: String(row.paymentMethod || ""),
+      status: String(row.status || ""),
+      donorName: String(row.donorName || ""),
+      donorEmail: String(row.donorEmail || "").toLowerCase(),
+    };
+  }).filter((row) => {
+    return row.donorEmail === email &&
+      row.status === "completed" &&
+      row.giftDate >= fromDate &&
+      row.giftDate <= toDate;
+  }).sort((a, b) => a.giftDate.localeCompare(b.giftDate));
+
+  const total = gifts.reduce((sum, row) => sum + row.amount, 0);
+
+  const settingsSnap = await db.collection("givingSettings").doc("main").get();
+  const settings = settingsSnap.exists ? settingsSnap.data() : {};
+
+  return {
+    success: true,
+    email: email,
+    fromDate: fromDate,
+    toDate: toDate,
+    donorName: gifts[0] ? gifts[0].donorName : "",
+    statementNote: settings.statementNote ||
+      "This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor.",
+    total: total,
+    gifts: gifts.map((row) => {
+      return {
+        giftDate: row.giftDate,
+        fundName: row.fundName,
+        amount: row.amount,
+        frequency: row.frequency,
+        paymentMethod: row.paymentMethod,
+      };
+    }),
+  };
+});

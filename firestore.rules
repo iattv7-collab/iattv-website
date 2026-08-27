@@ -99,7 +99,12 @@ service cloud.firestore {
     // --------------------------------------------------
 
     match /givingFunds/{fundId} {
-      allow read, create, update, delete: if isAdmin();
+      allow read: if isAdmin()
+                  || (
+                    resource.data.active == true
+                    && resource.data.isPublic == true
+                  );
+      allow create, update, delete: if isAdmin();
     }
 
     match /givingSettings/{documentId} {

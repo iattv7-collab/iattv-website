@@ -347,3 +347,114 @@ exports.sendGive2Statement = onCall(
       return {success: true};
     },
 );
+
+exports.sendGive2MonthReport = onCall(
+    {
+      secrets: [RESEND_API_KEY],
+    },
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError("unauthenticated", "Sign in required.");
+      }
+
+      const adminSnap = await db.collection("admins").doc(request.auth.uid).get();
+      if (!adminSnap.exists || adminSnap.data().active !== true) {
+        throw new HttpsError("permission-denied", "Administrator only.");
+      }
+
+      const yearMonth = clean((request.data || {}).yearMonth, 7);
+      if (!/^\d{4}-\d{2}$/.test(yearMonth)) {
+        throw new HttpsError("invalid-argument", "Choose a valid month.");
+      }
+
+      const settingsSnap = await db.collection("givingSettings").doc("main").get();
+      const settings = settingsSnap.exists ? settingsSnap.data() : {};
+      const accountantEmail = clean(settings.accountantEmail, 254).toLowerCase();
+
+      if (!accountantEmail || !validEmail(accountantEmail)) {
+        throw new HttpsError(
+            "failed-precondition",
+            "Save an accountant email in Give 2 settings first.",
+        );
+      }
+
+      const snapshot = await db.collection("donations").get();
+      const gifts = snapshot.docs.map((item) => {
+        const row = item.data() || {};
+        return {
+          giftDate: String(row.giftDate || ""),
+          donorName: String(row.donorName || ""),
+          donorEmail: String(row.donorEmail || ""),
+          fundName: String(row.fundNameSnapshot || ""),
+          amount: Number(row.amount || 0),
+          paymentMethod: String(row.paymentMethod || ""),
+          status: String(row.status || ""),
+        };
+      }).filter((row) => {
+        return row.status === "completed" && row.giftDate.startsWith(yearMonth);
+      }).sort((a, b) => a.giftDate.localeCompare(b.giftDate));
+
+      const total = gifts.reduce((sum, row) => sum + row.amount, 0);
+      const rowsHtml = gifts.length ?
+        gifts.map((row) => {
+          return "<tr><td>" + escapeHtml(row.giftDate) +
+            "</td><td>" + escapeHtml(row.donorName) +
+            "</td><td>" + escapeHtml(row.fundName) +
+            "</td><td>$" + row.amount.toFixed(2) +
+            "</td><td>" + escapeHtml(row.paymentMethod) + "</td></tr>";
+        }).join("") :
+        "<tr><td colspan=\"5\">No completed gifts this month.</td></tr>";
+
+      const csv = "Date,Donor,Email,Fund,Amount,Method\n" + gifts.map((row) => {
+        return [
+          row.giftDate,
+          row.donorName,
+          row.donorEmail,
+          row.fundName,
+          row.amount.toFixed(2),
+          row.paymentMethod,
+        ].map((value) => "\"" + String(value).replace(/"/g, "\"\"") + "\"").join(",");
+      }).join("\n");
+
+      const html =
+        "<div style=\"font-family:Arial,sans-serif;color:#222\">" +
+        "<h2>IATTV monthly giving report</h2>" +
+        "<p>Month: " + escapeHtml(yearMonth) + "</p>" +
+        "<p>Completed gifts: " + gifts.length + "</p>" +
+        "<p><strong>Total: $" + total.toFixed(2) + "</strong></p>" +
+        "<table cellpadding=\"6\" style=\"border-collapse:collapse\">" +
+        "<tr style=\"background:#0b3190;color:#fff\"><th>Date</th><th>Donor</th><th>Fund</th><th>Amount</th><th>Method</th></tr>" +
+        rowsHtml +
+        "</table>" +
+        "<p style=\"font-size:12px;color:#666\">For accounting reconciliation. Not a tax filing.</p>" +
+        "</div>";
+
+      const resendResponse = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + RESEND_API_KEY.value(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "IATTV Giving Records <prayer@iattv.org>",
+          to: [accountantEmail],
+          subject: "IATTV giving report " + yearMonth,
+          html: html,
+          attachments: [
+            {
+              filename: "iattv-giving-" + yearMonth + ".csv",
+              content: Buffer.from(csv).toString("base64"),
+            },
+          ],
+        }),
+      });
+
+      if (!resendResponse.ok) {
+        const errorText = await resendResponse.text();
+        console.error("Resend rejected month report:", errorText);
+        throw new HttpsError("internal", "Unable to email the report.");
+      }
+
+      return {success: true, count: gifts.length, total: total};
+    },
+);

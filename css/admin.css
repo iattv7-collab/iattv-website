@@ -864,3 +864,27 @@ ADMIN MESSAGE MOBILE
     flex-direction: row;
   }
 }
+
+.give2-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.give2-tab {
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1px solid #d7deea;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  color: #0b2b70;
+}
+
+.give2-tab.active {
+  background: #0b3190;
+  color: #fff;
+  border-color: #0b3190;
+}

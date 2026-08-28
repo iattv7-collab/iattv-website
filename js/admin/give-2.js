@@ -2,13 +2,14 @@
 // FILE: /js/admin/give-2.js
 // PROJECT: IATTV Website
 // PURPOSE:
-// Protects Give 2 admin, manages funds/settings, and
-// records manual gifts to the IATTV ledger.
+// Protects Give 2 admin, manages funds/settings,
+// records manual gifts, and builds monthly reports.
 // ======================================================
 
-import { auth, db } from "/js/services/firebase-config.js";
+import { auth, db, functions } from "/js/services/firebase-config.js";
 import { requireAdmin } from "/js/admin/admin-guard.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-functions.js";
 import {
   collection,
   doc,
@@ -48,6 +49,7 @@ const settingsForm = document.getElementById("settingsForm");
 const settingsCurrency = document.getElementById("settingsCurrency");
 const settingsEnabled = document.getElementById("settingsEnabled");
 const settingsStatementNote = document.getElementById("settingsStatementNote");
+const settingsAccountantEmail = document.getElementById("settingsAccountantEmail");
 const settingsFormStatus = document.getElementById("settingsFormStatus");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 
@@ -68,6 +70,11 @@ const donationsLoading = document.getElementById("donationsLoading");
 const donationsEmpty = document.getElementById("donationsEmpty");
 const donationsList = document.getElementById("donationsList");
 
+const reportMonth = document.getElementById("reportMonth");
+const downloadReportButton = document.getElementById("downloadReportButton");
+const emailReportButton = document.getElementById("emailReportButton");
+const reportStatus = document.getElementById("reportStatus");
+
 let currentAdmin = null;
 const SETTINGS_DOC_ID = "main";
 
@@ -85,21 +92,27 @@ function escapeHtml(value) {
   });
 }
 
-function setSettingsStatus(message, type = "") {
+function setSettingsStatus(message, type) {
   if (!settingsFormStatus) return;
   settingsFormStatus.textContent = message || "";
-  settingsFormStatus.className = "login-message" + (type ? ` ${type}` : "");
+  settingsFormStatus.className = "login-message" + (type ? " " + type : "");
 }
 
-function setStatus(message, type = "") {
+function setStatus(message, type) {
   fundFormStatus.textContent = message || "";
-  fundFormStatus.className = "login-message" + (type ? ` ${type}` : "");
+  fundFormStatus.className = "login-message" + (type ? " " + type : "");
 }
 
-function setManualStatus(message, type = "") {
+function setManualStatus(message, type) {
   if (!manualGiftStatus) return;
   manualGiftStatus.textContent = message || "";
-  manualGiftStatus.className = "login-message" + (type ? ` ${type}` : "");
+  manualGiftStatus.className = "login-message" + (type ? " " + type : "");
+}
+
+function setReportStatus(message, type) {
+  if (!reportStatus) return;
+  reportStatus.textContent = message || "";
+  reportStatus.className = "login-message" + (type ? " " + type : "");
 }
 
 async function loadSettings() {
@@ -111,6 +124,7 @@ async function loadSettings() {
       settingsEnabled.checked = true;
       settingsStatementNote.value =
         "This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor.";
+      if (settingsAccountantEmail) settingsAccountantEmail.value = "";
       return;
     }
     const data = snap.data();
@@ -119,6 +133,9 @@ async function loadSettings() {
     settingsStatementNote.value =
       data.statementNote ||
       "This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor.";
+    if (settingsAccountantEmail) {
+      settingsAccountantEmail.value = data.accountantEmail || "";
+    }
   } catch (error) {
     console.error("Unable to load giving settings:", error);
     setSettingsStatus("Unable to load settings.", "error");
@@ -142,8 +159,7 @@ function startEditFund(fund) {
   fundIdInput.value = fund.id;
   fundNameInput.value = fund.name || "";
   if (fundPublicInput) fundPublicInput.checked = fund.isPublic === true;
-  fundOrderInput.value =
-    typeof fund.order === "number" ? String(fund.order) : "0";
+  fundOrderInput.value = typeof fund.order === "number" ? String(fund.order) : "0";
   fundDescriptionInput.value = fund.description || "";
   fundActiveInput.checked = fund.active !== false;
   fundFormTitle.textContent = "Edit Fund";
@@ -159,21 +175,16 @@ async function loadFunds() {
   fundsList.innerHTML = "";
 
   try {
-    const snapshot = await getDocs(
-      query(collection(db, "givingFunds"), orderBy("order")),
-    );
+    const snapshot = await getDocs(query(collection(db, "givingFunds"), orderBy("order")));
     const funds = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     fundsLoading.hidden = true;
 
     if (manualFund) {
       manualFund.innerHTML =
-        `<option value="">Select a fund</option>` +
-        funds
-          .map(
-            (fund) =>
-              `<option value="${fund.id}">${escapeHtml(fund.name || "Untitled")}</option>`,
-          )
-          .join("");
+        '<option value="">Select a fund</option>' +
+        funds.map((fund) => {
+          return '<option value="' + fund.id + '">' + escapeHtml(fund.name || "Untitled") + "</option>";
+        }).join("");
     }
 
     if (!funds.length) {
@@ -181,35 +192,26 @@ async function loadFunds() {
       return;
     }
 
-    fundsList.innerHTML = funds
-      .map((fund) => {
-        const statusLabel = fund.active === false ? "Inactive" : "Active";
-        const statusColor = fund.active === false ? "#b42318" : "#0b2b70";
-        return `
-          <div class="admin-message-item" data-fund-id="${escapeHtml(fund.id)}">
-            <div>
-              <strong style="color:#123b8f">${escapeHtml(fund.name || "Untitled")}</strong>
-              <div style="margin-top:6px;color:#6b7484;font-size:13px">
-                Order: ${escapeHtml(String(fund.order ?? 0))}
-                ${fund.isPublic ? " • Public" : ""}
-              </div>
-            </div>
-            <div>
-              <div style="color:${statusColor};font-weight:700;font-size:13px">${statusLabel}</div>
-              <div style="margin-top:6px;color:#6b7484;font-size:13px">
-                ${escapeHtml(fund.description || "No description")}
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" class="admin-secondary-button" data-action="edit">Edit</button>
-              <button type="button" class="admin-secondary-button" data-action="toggle">
-                ${fund.active === false ? "Activate" : "Deactivate"}
-              </button>
-            </div>
-          </div>
-        `;
-      })
-      .join("");
+    fundsList.innerHTML = funds.map((fund) => {
+      const statusLabel = fund.active === false ? "Inactive" : "Active";
+      const statusColor = fund.active === false ? "#b42318" : "#0b2b70";
+      return (
+        '<div class="admin-message-item" data-fund-id="' + escapeHtml(fund.id) + '">' +
+        "<div><strong style=\"color:#123b8f\">" + escapeHtml(fund.name || "Untitled") + "</strong>" +
+        "<div style=\"margin-top:6px;color:#6b7484;font-size:13px\">Order: " +
+        escapeHtml(String(fund.order ?? 0)) + (fund.isPublic ? " • Public" : "") +
+        "</div></div>" +
+        "<div><div style=\"color:" + statusColor + ";font-weight:700;font-size:13px\">" +
+        statusLabel + "</div>" +
+        "<div style=\"margin-top:6px;color:#6b7484;font-size:13px\">" +
+        escapeHtml(fund.description || "No description") + "</div></div>" +
+        "<div style=\"display:flex;gap:8px;flex-wrap:wrap\">" +
+        "<button type=\"button\" class=\"admin-secondary-button\" data-action=\"edit\">Edit</button>" +
+        "<button type=\"button\" class=\"admin-secondary-button\" data-action=\"toggle\">" +
+        (fund.active === false ? "Activate" : "Deactivate") +
+        "</button></div></div>"
+      );
+    }).join("");
 
     fundsList.querySelectorAll(".admin-message-item").forEach((row) => {
       const fund = funds.find((item) => item.id === row.dataset.fundId);
@@ -222,7 +224,7 @@ async function loadFunds() {
           await updateDoc(doc(db, "givingFunds", fund.id), {
             active: fund.active === false,
             updatedAt: serverTimestamp(),
-            updatedBy: currentAdmin?.uid || "",
+            updatedBy: currentAdmin && currentAdmin.uid ? currentAdmin.uid : "",
           });
           await loadFunds();
         } catch (error) {
@@ -239,19 +241,21 @@ async function loadFunds() {
   }
 }
 
-async function findOrCreateDonor({ firstName, lastName, email }) {
-  const cleanEmail = (email || "").trim().toLowerCase();
+async function findOrCreateDonor(info) {
+  const firstName = info.firstName;
+  const lastName = info.lastName;
+  const cleanEmail = (info.email || "").trim().toLowerCase();
 
   if (cleanEmail) {
     const existing = await getDocs(collection(db, "donors"));
-    const match = existing.docs.find(
-      (item) => String(item.data().email || "").toLowerCase() === cleanEmail,
-    );
+    const match = existing.docs.find((item) => {
+      return String(item.data().email || "").toLowerCase() === cleanEmail;
+    });
     if (match) {
       await updateDoc(doc(db, "donors", match.id), {
-        firstName,
-        lastName,
-        name: `${firstName} ${lastName}`.trim(),
+        firstName: firstName,
+        lastName: lastName,
+        name: (firstName + " " + lastName).trim(),
         email: cleanEmail,
         updatedAt: serverTimestamp(),
       });
@@ -260,9 +264,9 @@ async function findOrCreateDonor({ firstName, lastName, email }) {
   }
 
   const created = await addDoc(collection(db, "donors"), {
-    firstName,
-    lastName,
-    name: `${firstName} ${lastName}`.trim(),
+    firstName: firstName,
+    lastName: lastName,
+    name: (firstName + " " + lastName).trim(),
     email: cleanEmail,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -290,26 +294,19 @@ async function loadDonations() {
       return;
     }
 
-    donationsList.innerHTML = rows
-      .map((row) => {
-        return `
-          <div class="admin-message-item">
-            <div>
-              <strong style="color:#123b8f">${escapeHtml(row.donorName || "Donor")}</strong>
-              <div style="margin-top:6px;color:#6b7484;font-size:13px">
-                ${escapeHtml(row.giftDate || "")} • ${escapeHtml(row.fundNameSnapshot || "")}
-              </div>
-            </div>
-            <div>
-              <div style="font-weight:700">$${Number(row.amount || 0).toFixed(2)}</div>
-              <div style="margin-top:6px;color:#6b7484;font-size:13px">
-                ${escapeHtml(row.paymentMethod || "manual")} • ${escapeHtml(row.status || "")}
-              </div>
-            </div>
-          </div>
-        `;
-      })
-      .join("");
+    donationsList.innerHTML = rows.map((row) => {
+      return (
+        '<div class="admin-message-item"><div>' +
+        "<strong style=\"color:#123b8f\">" + escapeHtml(row.donorName || "Donor") + "</strong>" +
+        "<div style=\"margin-top:6px;color:#6b7484;font-size:13px\">" +
+        escapeHtml(row.giftDate || "") + " • " + escapeHtml(row.fundNameSnapshot || "") +
+        "</div></div><div><div style=\"font-weight:700\">$" +
+        Number(row.amount || 0).toFixed(2) + "</div>" +
+        "<div style=\"margin-top:6px;color:#6b7484;font-size:13px\">" +
+        escapeHtml(row.paymentMethod || "manual") + " • " + escapeHtml(row.status || "") +
+        "</div></div></div>"
+      );
+    }).join("");
   } catch (error) {
     console.error("Unable to load donations:", error);
     donationsLoading.hidden = true;
@@ -317,6 +314,23 @@ async function loadDonations() {
     donationsEmpty.textContent =
       "Unable to load donations. If Firestore shows an index link in the console, open it.";
   }
+}
+
+function toCsv(rows) {
+  const header = "Date,Donor,Email,Fund,Amount,Method,Status,Reference";
+  const lines = rows.map((row) => {
+    return [
+      row.giftDate || "",
+      row.donorName || "",
+      row.donorEmail || "",
+      row.fundNameSnapshot || "",
+      Number(row.amount || 0).toFixed(2),
+      row.paymentMethod || "",
+      row.status || "",
+      row.processorTransactionId || "",
+    ].map((value) => "\"" + String(value).replace(/"/g, "\"\"") + "\"").join(",");
+  });
+  return [header].concat(lines).join("\n");
 }
 
 fundForm.addEventListener("submit", async (event) => {
@@ -328,13 +342,13 @@ fundForm.addEventListener("submit", async (event) => {
   }
 
   const payload = {
-    name,
+    name: name,
     description: fundDescriptionInput.value.trim(),
     order: Number(fundOrderInput.value || 0),
     active: fundActiveInput.checked,
     isPublic: fundPublicInput ? fundPublicInput.checked === true : false,
     updatedAt: serverTimestamp(),
-    updatedBy: currentAdmin?.uid || "",
+    updatedBy: currentAdmin && currentAdmin.uid ? currentAdmin.uid : "",
   };
 
   saveFundButton.disabled = true;
@@ -349,7 +363,7 @@ fundForm.addEventListener("submit", async (event) => {
       await addDoc(collection(db, "givingFunds"), {
         ...payload,
         createdAt: serverTimestamp(),
-        createdBy: currentAdmin?.uid || "",
+        createdBy: currentAdmin && currentAdmin.uid ? currentAdmin.uid : "",
       });
       setStatus("Fund created.", "success");
     }
@@ -379,8 +393,11 @@ if (settingsForm) {
           currency: settingsCurrency.value.trim().toUpperCase() || "USD",
           enabled: settingsEnabled.checked,
           statementNote: settingsStatementNote.value.trim(),
+          accountantEmail: settingsAccountantEmail
+            ? settingsAccountantEmail.value.trim().toLowerCase()
+            : "",
           updatedAt: serverTimestamp(),
-          updatedBy: currentAdmin?.uid || "",
+          updatedBy: currentAdmin && currentAdmin.uid ? currentAdmin.uid : "",
         },
         { merge: true },
       );
@@ -403,7 +420,7 @@ if (manualGiftForm) {
     const amount = Number(manualAmount.value);
     const giftDate = manualDate.value;
     const fundId = manualFund.value;
-    const fundName = manualFund.selectedOptions[0]?.textContent || "";
+    const fundName = manualFund.selectedOptions[0] ? manualFund.selectedOptions[0].textContent : "";
 
     if (!amount || amount <= 0 || !fundId || !giftDate) {
       setManualStatus("Amount, date, and fund are required.", "error");
@@ -414,15 +431,15 @@ if (manualGiftForm) {
     setManualStatus("Saving gift...");
 
     try {
-      const donor = await findOrCreateDonor({ firstName, lastName, email });
+      const donor = await findOrCreateDonor({ firstName: firstName, lastName: lastName, email: email });
       await addDoc(collection(db, "donations"), {
         donorId: donor.id,
-        donorName: `${firstName} ${lastName}`.trim(),
+        donorName: (firstName + " " + lastName).trim(),
         donorEmail: donor.email || "",
-        amount,
+        amount: amount,
         currency: "USD",
-        giftDate,
-        fundId,
+        giftDate: giftDate,
+        fundId: fundId,
         fundNameSnapshot: fundName,
         frequency: "one-time",
         paymentMethod: manualMethod.value,
@@ -431,7 +448,7 @@ if (manualGiftForm) {
         status: "completed",
         source: "admin-manual",
         notes: manualNotes.value.trim(),
-        createdBy: currentAdmin?.uid || "",
+        createdBy: currentAdmin && currentAdmin.uid ? currentAdmin.uid : "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -449,6 +466,59 @@ if (manualGiftForm) {
     }
   });
 }
+
+downloadReportButton && downloadReportButton.addEventListener("click", async () => {
+  const yearMonth = reportMonth && reportMonth.value ? reportMonth.value : "";
+  if (!yearMonth) {
+    setReportStatus("Choose a month.", "error");
+    return;
+  }
+
+  setReportStatus("Building spreadsheet...");
+
+  try {
+    const snapshot = await getDocs(collection(db, "donations"));
+    const rows = snapshot.docs.map((item) => ({ id: item.id, ...item.data() })).filter((row) => {
+      return String(row.giftDate || "").startsWith(yearMonth) && row.status === "completed";
+    }).sort((a, b) => String(a.giftDate).localeCompare(String(b.giftDate)));
+
+    const csv = toCsv(rows);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "iattv-giving-" + yearMonth + ".csv";
+    link.click();
+    URL.revokeObjectURL(url);
+    setReportStatus("Downloaded " + rows.length + " gift(s).", "success");
+  } catch (error) {
+    console.error("Unable to download report:", error);
+    setReportStatus("Unable to download report.", "error");
+  }
+});
+
+emailReportButton && emailReportButton.addEventListener("click", async () => {
+  const yearMonth = reportMonth && reportMonth.value ? reportMonth.value : "";
+  if (!yearMonth) {
+    setReportStatus("Choose a month.", "error");
+    return;
+  }
+
+  emailReportButton.disabled = true;
+  setReportStatus("Emailing accountant...");
+
+  try {
+    const sendGive2MonthReport = httpsCallable(functions, "sendGive2MonthReport");
+    const result = await sendGive2MonthReport({ yearMonth: yearMonth });
+    const count = result.data && result.data.count ? result.data.count : 0;
+    setReportStatus("Sent " + count + " gift(s) to the accountant.", "success");
+  } catch (error) {
+    console.error("Unable to email report:", error);
+    setReportStatus("Unable to email the report. Save accountant email first.", "error");
+  } finally {
+    emailReportButton.disabled = false;
+  }
+});
 
 signOutButton.addEventListener("click", async () => {
   try {
@@ -472,9 +542,38 @@ async function initializeGive2Admin() {
     manualDate.value = new Date().toISOString().slice(0, 10);
   }
 
+  if (reportMonth && !reportMonth.value) {
+    reportMonth.value = new Date().toISOString().slice(0, 7);
+  }
+
   await loadSettings();
   await loadFunds();
   await loadDonations();
 }
+
+function setupGive2Tabs() {
+  const tabs = document.querySelectorAll("[data-tab]");
+  const panels = document.querySelectorAll("[data-panel]");
+  if (!tabs.length) return;
+
+  function showTab(name) {
+    tabs.forEach((tab) => {
+      tab.classList.toggle("active", tab.dataset.tab === name);
+    });
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.panel !== name;
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      showTab(tab.dataset.tab);
+    });
+  });
+
+  showTab("settings");
+}
+
+setupGive2Tabs();
 
 initializeGive2Admin();

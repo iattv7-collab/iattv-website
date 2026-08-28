@@ -52,12 +52,10 @@ body {
     sans-serif;
 
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #ffffff 0%,
       #f7f9fc 50%,
-      #eef3fb 100%
-    );
+      #eef3fb 100%);
 
   color: var(--text);
 }
@@ -449,7 +447,7 @@ ADMIN DASHBOARD
   font-size: 34px;
 }
 
-.dashboard-intro > p:last-child {
+.dashboard-intro>p:last-child {
   margin: 0;
 
   color: var(--text-soft);

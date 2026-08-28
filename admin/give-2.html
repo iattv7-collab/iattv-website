@@ -9,302 +9,294 @@ Separate from the existing Giving / Ofrenda module.
 
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>IATTV Admin | Give 2</title>
     <link rel="stylesheet" href="/css/admin.css" />
-  </head>
+</head>
 
-  <body class="admin-dashboard-body">
+<body class="admin-dashboard-body">
     <div id="adminLoading" class="admin-loading">
-      <div class="admin-loading-brand">IATTV</div>
-      <p>Verifying administrator access...</p>
+        <div class="admin-loading-brand">IATTV</div>
+        <p>Verifying administrator access...</p>
     </div>
 
     <div id="adminApp" class="admin-app" hidden>
-      <header class="admin-header">
-        <div class="admin-header-brand">
-          <a href="/admin/dashboard.html" class="admin-header-logo">IATTV</a>
-          <div class="admin-header-label">Ministry Administration</div>
-        </div>
-
-        <div class="admin-header-user">
-          <span id="adminName"></span>
-          <button id="signOutButton" class="admin-signout-button" type="button">
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      <main class="admin-dashboard">
-        <section class="dashboard-intro">
-          <p class="dashboard-eyebrow">GIVING SYSTEM</p>
-          <h1>Give 2</h1>
-          <p>
-            Manage giving funds for the new IATTV ledger. This module is
-            separate from the existing Giving page and Ofrenda system.
-          </p>
-        </section>
-
-        <div class="give2-tabs" role="tablist">
-          <button type="button" class="give2-tab active" data-tab="settings">Settings</button>
-          <button type="button" class="give2-tab" data-tab="funds">Funds</button>
-          <button type="button" class="give2-tab" data-tab="gifts">Record gift</button>
-          <button type="button" class="give2-tab" data-tab="ledger">Ledger</button>
-          <button type="button" class="give2-tab" data-tab="reports">Reports</button>
-        </div>
-
-        <section class="admin-panel" data-panel="settings">
-          <div class="admin-panel-heading">
-            <div>
-              <p class="dashboard-eyebrow">SETTINGS</p>
-              <h2>Giving Settings</h2>
-            </div>
-          </div>
-
-          <form id="settingsForm">
-            <div class="admin-form-grid">
-              <div class="form-group">
-                <label for="settingsCurrency">Default Currency</label>
-                <input id="settingsCurrency" type="text" value="USD" maxlength="3" required />
-              </div>
-
-              <div class="form-group">
-                <label class="admin-checkbox-row" style="margin-top: 28px">
-                  <input id="settingsEnabled" type="checkbox" checked />
-                  <span>Give 2 module enabled (admin)</span>
-                </label>
-              </div>
-
-              <div class="form-group admin-form-full">
-                <label for="settingsStatementNote">
-                  Statement note (shown on donor statements later)
-                </label>
-                <textarea
-                  id="settingsStatementNote"
-                  rows="3"
-                  placeholder="This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor."
-                ></textarea>
-              </div>
-
-              <div class="form-group admin-form-full">
-                <label for="settingsAccountantEmail">Accountant email</label>
-                <input
-                  id="settingsAccountantEmail"
-                  type="email"
-                  placeholder="accountant@email.com"
-                />
-              </div>
+        <header class="admin-header">
+            <div class="admin-header-brand">
+                <a href="/admin/dashboard.html" class="admin-header-logo">IATTV</a>
+                <div class="admin-header-label">Ministry Administration</div>
             </div>
 
-            <div class="admin-form-actions">
-              <button
-                id="saveSettingsButton"
-                class="admin-login-button admin-form-submit"
-                type="submit"
-              >
-                Save Settings
-              </button>
-              <p id="settingsFormStatus" class="login-message" aria-live="polite"></p>
+            <div class="admin-header-user">
+                <span id="adminName"></span>
+                <button id="signOutButton" class="admin-signout-button" type="button">
+                    Sign Out
+                </button>
             </div>
-          </form>
-        </section>
+        </header>
 
-        <section class="admin-panel" data-panel="funds">
-          <div class="admin-panel-heading">
-            <div>
-              <p class="dashboard-eyebrow">FUNDS</p>
-              <h2 id="fundFormTitle">Add Fund</h2>
-            </div>
-            <button id="cancelFundEditButton" class="admin-secondary-button" type="button" hidden>
-              Cancel Edit
-            </button>
-          </div>
+        <main class="admin-dashboard">
+            <section class="dashboard-intro">
+                <p class="dashboard-eyebrow">GIVING SYSTEM</p>
+                <h1>Give 2</h1>
+                <p>
+                    Manage giving funds for the new IATTV ledger. This module is
+                    separate from the existing Giving page and Ofrenda system.
+                </p>
+            </section>
 
-          <form id="fundForm">
-            <input id="fundId" type="hidden" />
-            <div class="admin-form-grid">
-              <div class="form-group">
-                <label for="fundName">Fund Name</label>
-                <input id="fundName" type="text" placeholder="General" required />
-              </div>
-              <div class="form-group">
-                <label for="fundOrder">Display Order</label>
-                <input id="fundOrder" type="number" min="0" step="1" value="0" />
-              </div>
-              <div class="form-group admin-form-full">
-                <label for="fundDescription">Description (optional)</label>
-                <textarea id="fundDescription" rows="3" placeholder="Short description for admin use"></textarea>
-              </div>
-              <div class="form-group admin-form-full">
-                <label class="admin-checkbox-row">
-                  <input id="fundActive" type="checkbox" checked />
-                  <span>Active</span>
-                </label>
-              </div>
-              <div class="form-group admin-form-full">
-                <label class="admin-checkbox-row">
-                  <input id="fundPublic" type="checkbox" />
-                  <span>Show on public Give 2 page</span>
-                </label>
-              </div>
+            <div class="give2-tabs" role="tablist">
+                <button type="button" class="give2-tab active" data-tab="settings">Settings</button>
+                <button type="button" class="give2-tab" data-tab="funds">Funds</button>
+                <button type="button" class="give2-tab" data-tab="gifts">Record gift</button>
+                <button type="button" class="give2-tab" data-tab="ledger">Ledger</button>
+                <button type="button" class="give2-tab" data-tab="reports">Reports</button>
             </div>
-            <div class="admin-form-actions">
-              <button id="saveFundButton" class="admin-login-button admin-form-submit" type="submit">
-                Save Fund
-              </button>
-              <p id="fundFormStatus" class="login-message" aria-live="polite"></p>
-            </div>
-          </form>
-        </section>
 
-        <section class="admin-panel" data-panel="funds">
-          <div class="admin-panel-heading">
-            <div>
-              <p class="dashboard-eyebrow">LEDGER FOUNDATION</p>
-              <h2>Existing Funds</h2>
-            </div>
-          </div>
-          <div id="fundsLoading" class="admin-empty-state">Loading funds...</div>
-          <div id="fundsEmpty" class="admin-empty-state" hidden>
-            No funds have been created yet.
-          </div>
-          <div id="fundsList" class="admin-message-list"></div>
-        </section>
+            <section class="admin-panel" data-panel="settings">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">SETTINGS</p>
+                        <h2>Giving Settings</h2>
+                    </div>
+                </div>
 
-        <section class="admin-panel" data-panel="gifts">
-          <div class="admin-panel-heading">
-            <div>
-              <p class="dashboard-eyebrow">LEDGER</p>
-              <h2>Record Manual Gift</h2>
-            </div>
-          </div>
-          <form id="manualGiftForm">
-            <div class="admin-form-grid">
-              <div class="form-group">
-                <label for="manualFirstName">First name</label>
-                <input id="manualFirstName" type="text" required />
-              </div>
-              <div class="form-group">
-                <label for="manualLastName">Last name</label>
-                <input id="manualLastName" type="text" required />
-              </div>
-              <div class="form-group">
-                <label for="manualEmail">Email (optional)</label>
-                <input id="manualEmail" type="email" />
-              </div>
-              <div class="form-group">
-                <label for="manualAmount">Amount</label>
-                <input id="manualAmount" type="number" min="1" step="0.01" required />
-              </div>
-              <div class="form-group">
-                <label for="manualDate">Date</label>
-                <input id="manualDate" type="date" required />
-              </div>
-              <div class="form-group">
-                <label for="manualFund">Fund</label>
-                <select id="manualFund" required>
-                  <option value="">Loading funds...</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="manualMethod">Method</label>
-                <select id="manualMethod" required>
-                  <option value="cash">Cash</option>
-                  <option value="check">Check</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="manualReference">Check / reference (optional)</label>
-                <input id="manualReference" type="text" />
-              </div>
-              <div class="form-group admin-form-full">
-                <label for="manualNotes">Notes (optional)</label>
-                <textarea id="manualNotes" rows="3"></textarea>
-              </div>
-            </div>
-            <div class="admin-form-actions">
-              <button id="saveManualGiftButton" class="admin-login-button admin-form-submit" type="submit">
-                Save Gift to Ledger
-              </button>
-              <p id="manualGiftStatus" class="login-message" aria-live="polite"></p>
-            </div>
-          </form>
-        </section>
+                <form id="settingsForm">
+                    <div class="admin-form-grid">
+                        <div class="form-group">
+                            <label for="settingsCurrency">Default Currency</label>
+                            <input id="settingsCurrency" type="text" value="USD" maxlength="3" required />
+                        </div>
 
-        <section class="admin-panel" data-panel="ledger">
-          <div class="admin-panel-heading">
-            <div>
-              <p class="dashboard-eyebrow">LEDGER</p>
-              <h2>Recent Donations</h2>
-            </div>
-          </div>
-          <div id="donationsLoading" class="admin-empty-state">Loading donations...</div>
-          <div id="donationsEmpty" class="admin-empty-state" hidden>
-            No donations recorded yet.
-          </div>
-          <div id="donationsList" class="admin-message-list"></div>
-        </section>
+                        <div class="form-group">
+                            <label class="admin-checkbox-row" style="margin-top: 28px">
+                                <input id="settingsEnabled" type="checkbox" checked />
+                                <span>Give 2 module enabled (admin)</span>
+                            </label>
+                        </div>
 
-        <section class="admin-panel" data-panel="reports">
-          <div class="admin-panel-heading">
-            <div>
-              <p class="dashboard-eyebrow">ACCOUNTING</p>
-              <h2>Monthly Report</h2>
-            </div>
-          </div>
-          <div class="admin-form-grid">
-            <div class="form-group">
-              <label for="reportMonth">Month</label>
-              <input id="reportMonth" type="month" required />
-            </div>
-          </div>
-          <div class="admin-form-actions">
-            <button id="downloadReportButton" class="admin-secondary-button" type="button">
-              Download CSV
-            </button>
-            <button id="emailReportButton" class="admin-login-button" type="button">
-              Email accountant
-            </button>
-            <p id="reportStatus" class="login-message" aria-live="polite"></p>
-          </div>
-        </section>
+                        <div class="form-group admin-form-full">
+                            <label for="settingsStatementNote">
+                                Statement note (shown on donor statements later)
+                            </label>
+                            <textarea id="settingsStatementNote" rows="3"
+                                placeholder="This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor."></textarea>
+                        </div>
 
-        <p style="margin-top: 20px">
-          <a href="/admin/dashboard.html" class="admin-secondary-button">
-            ← Back to Dashboard
-          </a>
-        </p>
-      </main>
+                        <div class="form-group admin-form-full">
+                            <label for="settingsAccountantEmail">Accountant email</label>
+                            <input id="settingsAccountantEmail" type="email" placeholder="accountant@email.com" />
+                        </div>
+                    </div>
+
+                    <div class="admin-form-actions">
+                        <button id="saveSettingsButton" class="admin-login-button admin-form-submit" type="submit">
+                            Save Settings
+                        </button>
+                        <p id="settingsFormStatus" class="login-message" aria-live="polite"></p>
+                    </div>
+                </form>
+            </section>
+
+            <section class="admin-panel" data-panel="funds">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">FUNDS</p>
+                        <h2 id="fundFormTitle">Add Fund</h2>
+                    </div>
+                    <button id="cancelFundEditButton" class="admin-secondary-button" type="button" hidden>
+                        Cancel Edit
+                    </button>
+                </div>
+
+                <form id="fundForm">
+                    <input id="fundId" type="hidden" />
+                    <div class="admin-form-grid">
+                        <div class="form-group">
+                            <label for="fundName">Fund Name</label>
+                            <input id="fundName" type="text" placeholder="General" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="fundOrder">Display Order</label>
+                            <input id="fundOrder" type="number" min="0" step="1" value="0" />
+                        </div>
+                        <div class="form-group admin-form-full">
+                            <label for="fundDescription">Description (optional)</label>
+                            <textarea id="fundDescription" rows="3"
+                                placeholder="Short description for admin use"></textarea>
+                        </div>
+                        <div class="form-group admin-form-full">
+                            <label class="admin-checkbox-row">
+                                <input id="fundActive" type="checkbox" checked />
+                                <span>Active</span>
+                            </label>
+                        </div>
+                        <div class="form-group admin-form-full">
+                            <label class="admin-checkbox-row">
+                                <input id="fundPublic" type="checkbox" />
+                                <span>Show on public Give 2 page</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="admin-form-actions">
+                        <button id="saveFundButton" class="admin-login-button admin-form-submit" type="submit">
+                            Save Fund
+                        </button>
+                        <p id="fundFormStatus" class="login-message" aria-live="polite"></p>
+                    </div>
+                </form>
+            </section>
+
+            <section class="admin-panel" data-panel="funds">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">LEDGER FOUNDATION</p>
+                        <h2>Existing Funds</h2>
+                    </div>
+                </div>
+                <div id="fundsLoading" class="admin-empty-state">Loading funds...</div>
+                <div id="fundsEmpty" class="admin-empty-state" hidden>
+                    No funds have been created yet.
+                </div>
+                <div id="fundsList" class="admin-message-list"></div>
+            </section>
+
+            <section class="admin-panel" data-panel="gifts">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">LEDGER</p>
+                        <h2>Record Manual Gift</h2>
+                    </div>
+                </div>
+                <form id="manualGiftForm">
+                    <div class="admin-form-grid">
+                        <div class="form-group">
+                            <label for="manualFirstName">First name</label>
+                            <input id="manualFirstName" type="text" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="manualLastName">Last name</label>
+                            <input id="manualLastName" type="text" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="manualEmail">Email (optional)</label>
+                            <input id="manualEmail" type="email" />
+                        </div>
+                        <div class="form-group">
+                            <label for="manualAmount">Amount</label>
+                            <input id="manualAmount" type="number" min="1" step="0.01" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="manualDate">Date</label>
+                            <input id="manualDate" type="date" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="manualFund">Fund</label>
+                            <select id="manualFund" required>
+                                <option value="">Loading funds...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="manualMethod">Method</label>
+                            <select id="manualMethod" required>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="manualReference">Check / reference (optional)</label>
+                            <input id="manualReference" type="text" />
+                        </div>
+                        <div class="form-group admin-form-full">
+                            <label for="manualNotes">Notes (optional)</label>
+                            <textarea id="manualNotes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="admin-form-actions">
+                        <button id="saveManualGiftButton" class="admin-login-button admin-form-submit" type="submit">
+                            Save Gift to Ledger
+                        </button>
+                        <p id="manualGiftStatus" class="login-message" aria-live="polite"></p>
+                    </div>
+                </form>
+            </section>
+
+            <section class="admin-panel" data-panel="ledger">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">LEDGER</p>
+                        <h2>Recent Donations</h2>
+                    </div>
+                </div>
+                <div id="donationsLoading" class="admin-empty-state">Loading donations...</div>
+                <div id="donationsEmpty" class="admin-empty-state" hidden>
+                    No donations recorded yet.
+                </div>
+                <div id="donationsList" class="admin-message-list"></div>
+            </section>
+
+            <section class="admin-panel" data-panel="reports">
+                <div class="admin-panel-heading">
+                    <div>
+                        <p class="dashboard-eyebrow">ACCOUNTING</p>
+                        <h2>Monthly Report</h2>
+                    </div>
+                </div>
+                <div class="admin-form-grid">
+                    <div class="form-group">
+                        <label for="reportMonth">Month</label>
+                        <input id="reportMonth" type="month" required />
+                    </div>
+                </div>
+                <div class="admin-form-actions">
+                    <button id="downloadReportButton" class="admin-secondary-button" type="button">
+                        Download CSV
+                    </button>
+                    <button id="emailReportButton" class="admin-login-button" type="button">
+                        Email accountant
+                    </button>
+                    <p id="reportStatus" class="login-message" aria-live="polite"></p>
+                </div>
+            </section>
+
+            <p style="margin-top: 20px">
+                <a href="/admin/dashboard.html" class="admin-secondary-button">
+                    ← Back to Dashboard
+                </a>
+            </p>
+        </main>
     </div>
 
-        <script>
-      (function setupGive2Tabs() {
-        const tabs = document.querySelectorAll("[data-tab]");
-        const panels = document.querySelectorAll("[data-panel]");
-        if (!tabs.length) return;
+    <script>
+        (function setupGive2Tabs() {
+            const tabs = document.querySelectorAll("[data-tab]");
+            const panels = document.querySelectorAll("[data-panel]");
+            if (!tabs.length) return;
 
-        function showTab(name) {
-          tabs.forEach(function (tab) {
-            tab.classList.toggle("active", tab.dataset.tab === name);
-          });
-          panels.forEach(function (panel) {
-            panel.hidden = panel.dataset.panel !== name;
-          });
-        }
+            function showTab(name) {
+                tabs.forEach(function (tab) {
+                    tab.classList.toggle("active", tab.dataset.tab === name);
+                });
+                panels.forEach(function (panel) {
+                    panel.hidden = panel.dataset.panel !== name;
+                });
+            }
 
-        tabs.forEach(function (tab) {
-          tab.addEventListener("click", function () {
-            showTab(tab.dataset.tab);
-          });
-        });
+            tabs.forEach(function (tab) {
+                tab.addEventListener("click", function () {
+                    showTab(tab.dataset.tab);
+                });
+            });
 
-        showTab("settings");
-      })();
+            showTab("settings");
+        })();
     </script>
     <script type="module" src="/js/admin/give-2.js"></script>
-  </body>
+</body>
+
 </html>

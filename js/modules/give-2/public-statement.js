@@ -15,8 +15,13 @@ const toDateInput = document.getElementById("toDate");
 const customDates = document.getElementById("customDates");
 const statusEl = document.getElementById("statementStatus");
 const resultEl = document.getElementById("statementResult");
+const emailStatementButton = document.getElementById("emailStatementButton");
+let lastStatementRequest = null;
 
 let rangeType = "year";
+if (customDates) {
+  customDates.hidden = true;
+}
 
 function toIso(date) {
   return date.toISOString().slice(0, 10);
@@ -86,11 +91,11 @@ form.addEventListener("submit", async (event) => {
     const rows = data.gifts || [];
     document.getElementById("statementRows").innerHTML = rows.length
       ? rows
-          .map(
-            (row) =>
-              `<p>${row.giftDate} — ${row.fundName} — $${Number(row.amount).toFixed(2)}</p>`,
-          )
-          .join("")
+        .map(
+          (row) =>
+            `<p>${row.giftDate} — ${row.fundName} — $${Number(row.amount).toFixed(2)}</p>`,
+        )
+        .join("")
       : "<p>No completed gifts were found for this email and date range.</p>";
 
     document.getElementById("statementTotal").textContent =
@@ -99,8 +104,30 @@ form.addEventListener("submit", async (event) => {
 
     resultEl.hidden = false;
     statusEl.textContent = "";
+    lastStatementRequest = { email, fromDate, toDate };
+    if (emailStatementButton) {
+      emailStatementButton.hidden = false;
+      emailStatementButton.disabled = false;
+    }
   } catch (error) {
     console.error("Unable to load statement:", error);
     statusEl.textContent = "Unable to load the statement. Please try again.";
+  }
+});
+
+emailStatementButton?.addEventListener("click", async () => {
+  if (!lastStatementRequest) return;
+
+  emailStatementButton.disabled = true;
+  statusEl.textContent = "Sending statement email...";
+
+  try {
+    const sendGive2Statement = httpsCallable(functions, "sendGive2Statement");
+    await sendGive2Statement(lastStatementRequest);
+    statusEl.textContent = "Statement sent. Check that inbox.";
+  } catch (error) {
+    console.error("Unable to email statement:", error);
+    statusEl.textContent = "Unable to send the email. Please try again.";
+    emailStatementButton.disabled = false;
   }
 });

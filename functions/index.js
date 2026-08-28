@@ -252,3 +252,98 @@ exports.getGive2Statement = onCall(async (request) => {
     }),
   };
 });
+
+
+exports.sendGive2Statement = onCall(
+    {
+      secrets: [RESEND_API_KEY],
+    },
+    async (request) => {
+      const data = request.data || {};
+      const email = clean(data.email, 254).toLowerCase();
+      const fromDate = clean(data.fromDate, 10);
+      const toDate = clean(data.toDate, 10);
+
+      if (!email || !validEmail(email)) {
+        throw new HttpsError(
+            "invalid-argument",
+            "A valid email is required.",
+        );
+      }
+
+      if (!fromDate || !toDate) {
+        throw new HttpsError(
+            "invalid-argument",
+            "A date range is required.",
+        );
+      }
+
+      const snapshot = await db.collection("donations").get();
+      const gifts = snapshot.docs.map((item) => {
+        const row = item.data() || {};
+        return {
+          giftDate: String(row.giftDate || ""),
+          fundName: String(row.fundNameSnapshot || ""),
+          amount: Number(row.amount || 0),
+          status: String(row.status || ""),
+          donorName: String(row.donorName || ""),
+          donorEmail: String(row.donorEmail || "").toLowerCase(),
+        };
+      }).filter((row) => {
+        return row.donorEmail === email &&
+          row.status === "completed" &&
+          row.giftDate >= fromDate &&
+          row.giftDate <= toDate;
+      }).sort((a, b) => a.giftDate.localeCompare(b.giftDate));
+
+      const total = gifts.reduce((sum, row) => sum + row.amount, 0);
+      const settingsSnap = await db.collection("givingSettings").doc("main").get();
+      const settings = settingsSnap.exists ? settingsSnap.data() : {};
+      const statementNote = settings.statementNote ||
+        "This statement reflects gifts recorded by IATTV. Official tax treatment is determined by applicable law and your advisor.";
+      const donorName = gifts[0] ? gifts[0].donorName : "";
+
+      const rowsHtml = gifts.length ?
+        gifts.map((row) => {
+          return "<tr><td>" + escapeHtml(row.giftDate) +
+            "</td><td>" + escapeHtml(row.fundName) +
+            "</td><td>$" + Number(row.amount).toFixed(2) + "</td></tr>";
+        }).join("") :
+        "<tr><td colspan=\"3\">No completed gifts in this range.</td></tr>";
+
+      const html =
+        "<div style=\"font-family:Arial,sans-serif;color:#222;max-width:700px\">" +
+        "<h2 style=\"color:#0b3190\">IATTV Giving Statement</h2>" +
+        "<p>" + escapeHtml(donorName || email) + "</p>" +
+        "<p>" + escapeHtml(fromDate) + " to " + escapeHtml(toDate) + "</p>" +
+        "<table style=\"width:100%;border-collapse:collapse\" cellpadding=\"8\">" +
+        "<tr style=\"background:#0b3190;color:#fff;text-align:left\"><th>Date</th><th>Fund</th><th>Amount</th></tr>" +
+        rowsHtml +
+        "</table>" +
+        "<p><strong>Total: $" + total.toFixed(2) + "</strong></p>" +
+        "<p style=\"font-size:12px;color:#666\">" + escapeHtml(statementNote) + "</p>" +
+        "</div>";
+
+      const resendResponse = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + RESEND_API_KEY.value(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "IATTV Giving Records <prayer@iattv.org>",
+          to: [email],
+          subject: "IATTV Giving Statement",
+          html: html,
+        }),
+      });
+
+      if (!resendResponse.ok) {
+        const errorText = await resendResponse.text();
+        console.error("Resend rejected statement email:", errorText);
+        throw new HttpsError("internal", "Unable to send the statement.");
+      }
+
+      return {success: true};
+    },
+);

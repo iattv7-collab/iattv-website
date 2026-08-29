@@ -114,3 +114,9 @@ Styles for the public Give 2 page shell.
 #customDates[hidden] {
   display: none !important;
 }
+
+.give2-note a {
+  color: var(--royal-blue, #0b3190);
+  text-decoration: underline;
+  font-weight: 700;
+}

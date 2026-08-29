@@ -21,6 +21,7 @@ const {
 } = require("firebase-functions/v2");
 
 const admin = require("firebase-admin");
+const PDFDocument = require("pdfkit");
 
 admin.initializeApp();
 
@@ -253,6 +254,66 @@ exports.getGive2Statement = onCall(async (request) => {
   };
 });
 
+function buildGive2StatementPdf(info) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({size: "LETTER", margin: 72});
+    const chunks = [];
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+
+    doc.fillColor("#0b3190").fontSize(28).text("IATTV", {align: "center"});
+    doc.moveDown(0.2);
+    doc.fillColor("#c7941d").fontSize(11).text("I AM THE TRUE VINE", {align: "center"});
+    doc.fillColor("#333").fontSize(10).text("iattv.org", {align: "center"});
+    doc.moveDown(0.6);
+    doc.strokeColor("#c7941d").moveTo(72, doc.y).lineTo(540, doc.y).stroke();
+    doc.moveDown(1);
+
+    doc.fillColor("#0b3190").fontSize(20).text("Giving Statement", {align: "center"});
+    doc.moveDown(1);
+    doc.fillColor("#222").fontSize(12);
+    doc.text("To " + (info.donorName || info.email));
+    doc.text(info.email);
+    doc.moveDown(0.5);
+    doc.text("Period");
+    doc.text(info.fromDate + " – " + info.toDate);
+    doc.moveDown(0.8);
+    doc.text("This statement lists gifts recorded by IATTV for the dates below.");
+    doc.moveDown(0.8);
+
+    doc.fillColor("#0b3190").text("Date                  Fund                    Method           Amount");
+    doc.moveTo(72, doc.y + 2).lineTo(540, doc.y + 2).stroke();
+    doc.moveDown(0.5);
+    doc.fillColor("#222");
+
+    if (!info.gifts.length) {
+      doc.text("No completed gifts in this range.");
+    } else {
+      info.gifts.forEach((row) => {
+        doc.text(
+            row.giftDate + "     " +
+            (row.fundName || "") + "     " +
+            (row.paymentMethod || "") + "     $" +
+            Number(row.amount || 0).toFixed(2),
+        );
+      });
+    }
+
+    doc.moveDown(0.6);
+    doc.fontSize(13).text("Total     $" + Number(info.total || 0).toFixed(2), {align: "right"});
+    doc.moveDown(1);
+    doc.fontSize(10).fillColor("#555").text(info.statementNote, {align: "left"});
+    doc.moveDown(1.5);
+    doc.fillColor("#0b3190").fontSize(10).text(
+        "IATTV  •  Jesus Christ — The True Vine  •  John 15:1",
+        {align: "center"},
+    );
+    doc.end();
+  });
+}
+
+
 
 exports.sendGive2Statement = onCall(
   {
@@ -324,6 +385,16 @@ exports.sendGive2Statement = onCall(
       "<p style=\"font-size:12px;color:#666\">" + escapeHtml(statementNote) + "</p>" +
       "</div>";
 
+        const pdfBuffer = await buildGive2StatementPdf({
+      donorName: donorName,
+      email: email,
+      fromDate: fromDate,
+      toDate: toDate,
+      gifts: gifts,
+      total: total,
+      statementNote: statementNote,
+    });
+
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -335,6 +406,12 @@ exports.sendGive2Statement = onCall(
         to: [email],
         subject: "IATTV Giving Statement",
         html: html,
+        attachments: [
+          {
+            filename: "IATTV-Giving-Statement.pdf",
+            content: pdfBuffer.toString("base64"),
+          },
+        ],
       }),
     });
 

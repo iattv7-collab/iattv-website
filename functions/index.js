@@ -9,6 +9,7 @@
 
 const {
   onCall,
+  onRequest,
   HttpsError,
 } = require("firebase-functions/v2/https");
 
@@ -28,6 +29,8 @@ admin.initializeApp();
 const db = admin.firestore();
 
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
+const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 
 setGlobalOptions({
   maxInstances: 10,
@@ -256,21 +259,21 @@ exports.getGive2Statement = onCall(async (request) => {
 
 function buildGive2StatementPdf(info) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({size: "LETTER", margin: 72});
+    const doc = new PDFDocument({ size: "LETTER", margin: 72 });
     const chunks = [];
     doc.on("data", (chunk) => chunks.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    doc.fillColor("#0b3190").fontSize(28).text("IATTV", {align: "center"});
+    doc.fillColor("#0b3190").fontSize(28).text("IATTV", { align: "center" });
     doc.moveDown(0.2);
-    doc.fillColor("#c7941d").fontSize(11).text("I AM THE TRUE VINE", {align: "center"});
-    doc.fillColor("#333").fontSize(10).text("iattv.org", {align: "center"});
+    doc.fillColor("#c7941d").fontSize(11).text("I AM THE TRUE VINE", { align: "center" });
+    doc.fillColor("#333").fontSize(10).text("iattv.org", { align: "center" });
     doc.moveDown(0.6);
     doc.strokeColor("#c7941d").moveTo(72, doc.y).lineTo(540, doc.y).stroke();
     doc.moveDown(1);
 
-    doc.fillColor("#0b3190").fontSize(20).text("Giving Statement", {align: "center"});
+    doc.fillColor("#0b3190").fontSize(20).text("Giving Statement", { align: "center" });
     doc.moveDown(1);
     doc.fillColor("#222").fontSize(12);
     doc.text("To " + (info.donorName || info.email));
@@ -292,22 +295,22 @@ function buildGive2StatementPdf(info) {
     } else {
       info.gifts.forEach((row) => {
         doc.text(
-            row.giftDate + "     " +
-            (row.fundName || "") + "     " +
-            (row.paymentMethod || "") + "     $" +
-            Number(row.amount || 0).toFixed(2),
+          row.giftDate + "     " +
+          (row.fundName || "") + "     " +
+          (row.paymentMethod || "") + "     $" +
+          Number(row.amount || 0).toFixed(2),
         );
       });
     }
 
     doc.moveDown(0.6);
-    doc.fontSize(13).text("Total     $" + Number(info.total || 0).toFixed(2), {align: "right"});
+    doc.fontSize(13).text("Total     $" + Number(info.total || 0).toFixed(2), { align: "right" });
     doc.moveDown(1);
-    doc.fontSize(10).fillColor("#555").text(info.statementNote, {align: "left"});
+    doc.fontSize(10).fillColor("#555").text(info.statementNote, { align: "left" });
     doc.moveDown(1.5);
     doc.fillColor("#0b3190").fontSize(10).text(
-        "IATTV  •  Jesus Christ — The True Vine  •  John 15:1",
-        {align: "center"},
+      "IATTV  •  Jesus Christ — The True Vine  •  John 15:1",
+      { align: "center" },
     );
     doc.end();
   });
@@ -385,7 +388,7 @@ exports.sendGive2Statement = onCall(
       "<p style=\"font-size:12px;color:#666\">" + escapeHtml(statementNote) + "</p>" +
       "</div>";
 
-        const pdfBuffer = await buildGive2StatementPdf({
+    const pdfBuffer = await buildGive2StatementPdf({
       donorName: donorName,
       email: email,
       fromDate: fromDate,
@@ -533,5 +536,136 @@ exports.sendGive2MonthReport = onCall(
     }
 
     return { success: true, count: gifts.length, total: total };
+  },
+);
+
+
+exports.createGive2Checkout = onCall(
+  {
+    secrets: [STRIPE_SECRET_KEY],
+  },
+  async (request) => {
+    const data = request.data || {};
+    const amount = Number(data.amount);
+    const email = clean(data.email, 254).toLowerCase();
+    const firstName = clean(data.firstName, 80);
+    const lastName = clean(data.lastName, 80);
+    const fundId = clean(data.fundId, 80);
+    const fundName = clean(data.fundName, 120);
+    const frequency = clean(data.frequency, 20) === "monthly" ? "monthly" : "one-time";
+
+    if (!amount || amount < 1) {
+      throw new HttpsError("invalid-argument", "A valid amount is required.");
+    }
+    if (!email || !validEmail(email)) {
+      throw new HttpsError("invalid-argument", "A valid email is required.");
+    }
+    if (!fundId) {
+      throw new HttpsError("invalid-argument", "A fund is required.");
+    }
+
+    const priceData = {
+      currency: "usd",
+      unit_amount: Math.round(amount * 100),
+      product_data: {
+        name: "IATTV gift — " + (fundName || "General"),
+      },
+    };
+
+    if (frequency === "monthly") {
+      priceData.recurring = {interval: "month"};
+    }
+
+    try {
+      const stripe = require("stripe")(STRIPE_SECRET_KEY.value());
+      const session = await stripe.checkout.sessions.create({
+        mode: frequency === "monthly" ? "subscription" : "payment",
+        customer_email: email,
+        success_url: "https://iattv.org/give-2/?paid=1",
+        cancel_url: "https://iattv.org/give-2/?canceled=1",
+        metadata: {
+          fundId: fundId,
+          fundName: fundName,
+          firstName: firstName,
+          lastName: lastName,
+          frequency: frequency,
+          source: "give-2",
+        },
+        line_items: [
+          {
+            quantity: 1,
+            price_data: priceData,
+          },
+        ],
+      });
+
+      return {success: true, url: session.url};
+    } catch (error) {
+      console.error("createGive2Checkout Stripe error:", error);
+      throw new HttpsError(
+        "internal",
+        String((error && error.message) || error),
+      );
+    }
+  },
+);
+
+exports.stripeGive2Webhook = onRequest(
+  {
+    secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET],
+  },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).send("Method not allowed");
+      return;
+    }
+
+    const stripe = require("stripe")(STRIPE_SECRET_KEY.value());
+    const signature = req.headers["stripe-signature"];
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        signature,
+        STRIPE_WEBHOOK_SECRET.value(),
+      );
+    } catch (error) {
+      console.error("Stripe webhook signature failed:", error);
+      res.status(400).send("Invalid signature");
+      return;
+    }
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object || {};
+      const metadata = session.metadata || {};
+      const email = String(session.customer_email || "").toLowerCase();
+      const amountTotal = Number(session.amount_total || 0) / 100;
+      const giftDate = new Date().toISOString().slice(0, 10);
+      const donorName = [metadata.firstName, metadata.lastName]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      await db.collection("donations").doc("stripe_" + session.id).set({
+        giftDate: giftDate,
+        amount: amountTotal,
+        currency: "USD",
+        frequency: metadata.frequency || "one-time",
+        fundId: metadata.fundId || "",
+        fundNameSnapshot: metadata.fundName || "",
+        donorName: donorName,
+        donorEmail: email,
+        paymentMethod: "card",
+        processor: "stripe",
+        processorTransactionId: session.id,
+        status: "completed",
+        source: "give-2-stripe",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+    }
+
+    res.status(200).send("ok");
   },
 );

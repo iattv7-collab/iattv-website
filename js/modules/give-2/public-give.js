@@ -6,7 +6,8 @@
 // collects gift details. Does not charge a card.
 // ======================================================
 
-import { db } from "/js/services/firebase-config.js";
+import { db, functions } from "/js/services/firebase-config.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-functions.js";
 import {
   collection,
   getDocs,
@@ -95,7 +96,7 @@ async function loadPublicFunds() {
   }
 }
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const amount = Number(selectedAmount);
@@ -130,13 +131,24 @@ form.addEventListener("submit", (event) => {
     phone: document.getElementById("phone").value.trim(),
   };
 
-  console.log("Give 2 draft (not charged):", draft);
-
   statusEl.textContent = isSpanish()
-    ? "Listo: " + (frequency === "monthly" ? "Mensual" : "Una vez") +
-      " $" + amount + " para " + fundName + ". El cobro se conectará después."
-    : "Ready: " + (frequency === "monthly" ? "Monthly" : "One-time") +
-      " $" + amount + " to " + fundName + ". Stripe checkout will be connected next.";
+    ? "Abriendo pago seguro..."
+    : "Opening secure checkout...";
+
+  try {
+    const createGive2Checkout = httpsCallable(functions, "createGive2Checkout");
+    const result = await createGive2Checkout(draft);
+    const url = result.data && result.data.url;
+    if (!url) {
+      throw new Error("No checkout URL");
+    }
+    window.location.href = url;
+  } catch (error) {
+    console.error("Give 2 checkout error:", error);
+    statusEl.textContent = isSpanish()
+      ? "No se pudo abrir el pago. Intente de nuevo."
+      : "Unable to open checkout. Please try again.";
+  }
 });
 
 function applyGive2Language() {

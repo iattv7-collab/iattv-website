@@ -5,15 +5,9 @@
 // Firestore security rules for public ministry content
 // and the protected IATTV administration system.
 // ======================================================
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --------------------------------------------------
-    // ADMIN AUTHORIZATION
-    // --------------------------------------------------
 
     function isSignedIn() {
       return request.auth != null;
@@ -21,111 +15,92 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn()
-        && exists(
-          /databases/$(database)/documents/admins/$(request.auth.uid)
-        )
-        && get(
-          /databases/$(database)/documents/admins/$(request.auth.uid)
-        ).data.active == true;
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
     }
 
-    // --------------------------------------------------
-    // ADMINS
-    //
-    // Admin authorization records cannot be created,
-    // changed, or deleted from the public website.
-    // --------------------------------------------------
+    function callerAdmin() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data;
+    }
+
+    function hasModule(name) {
+      return isAdmin() && (
+        callerAdmin().role == "admin" ||
+        callerAdmin().role == "full" ||
+        callerAdmin().role == name ||
+        (callerAdmin().keys().hasAny(["roles"]) && name in callerAdmin().roles)
+      );
+    }
+
+    function isFullAdmin() {
+      return hasModule("full");
+    }
+
+    function canManageContent() {
+      return hasModule("content") || hasModule("media");
+    }
+
+    function canManagePrayer() {
+      return hasModule("prayer");
+    }
+
+    function canManageGiving() {
+      return hasModule("giving");
+    }
+
+    function canReadGiving() {
+      return hasModule("giving") || hasModule("accountant");
+    }
 
     match /admins/{userId} {
       allow read: if isAdmin();
       allow create, update, delete: if false;
     }
 
-    // --------------------------------------------------
-    // MESSAGES
-    //
-    // Public can read published messages.
-    // Administrators manage all messages.
-    // --------------------------------------------------
-
     match /messages/{messageId} {
-      allow read: if resource.data.published == true
-                  || isAdmin();
-
-      allow create, update, delete: if isAdmin();
+      allow read: if resource.data.published == true || canManageContent();
+      allow create, update, delete: if canManageContent();
     }
-
-    // --------------------------------------------------
-    // SITE SETTINGS
-    //
-    // Public website can read settings.
-    // Only administrators can change them.
-    // --------------------------------------------------
 
     match /siteSettings/{documentId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isFullAdmin();
     }
-
-    // --------------------------------------------------
-    // PRAYER REQUESTS
-    //
-    // Anyone may submit a prayer request.
-    // Only administrators may read/manage requests.
-    // --------------------------------------------------
 
     match /prayerRequests/{requestId} {
       allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if canManagePrayer();
     }
 
-        // --------------------------------------------------
-    // GIVING METHODS
-    //
-    // Public can read enabled methods.
-    // Only administrators can create, update, or delete.
-    // --------------------------------------------------
-
-        match /givingMethods/{methodId} {
+    match /givingMethods/{methodId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if canManageGiving();
     }
-
-    // --------------------------------------------------
-    // GIVE 2 — FINANCIAL DATA (ADMIN ONLY)
-    //
-    // No public read yet. Public fund visibility will be
-    // decided when the /give-2/ public page is built.
-    // --------------------------------------------------
 
     match /givingFunds/{fundId} {
-      allow read: if isAdmin()
-                  || (
-                    resource.data.active == true
-                    && resource.data.isPublic == true
-                  );
-      allow create, update, delete: if isAdmin();
+      allow read: if canReadGiving()
+                  || (resource.data.active == true && resource.data.isPublic == true);
+      allow create, update, delete: if canManageGiving();
     }
 
     match /givingSettings/{documentId} {
-      allow read, create, update, delete: if isAdmin();
+      allow read: if canReadGiving();
+      allow create, update, delete: if canManageGiving();
     }
 
     match /donors/{donorId} {
-      allow read, create, update, delete: if isAdmin();
+      allow read: if canReadGiving();
+      allow create, update, delete: if canManageGiving();
     }
 
     match /donations/{donationId} {
-      allow read, create, update, delete: if isAdmin();
+      allow read: if canReadGiving();
+      allow create, update, delete: if canManageGiving();
     }
 
     match /stripeEvents/{eventId} {
-      allow read, create, update, delete: if isAdmin();
+      allow read, create, update, delete: if canManageGiving();
     }
-
-    // --------------------------------------------------
-    // DENY EVERYTHING ELSE
-    // --------------------------------------------------
 
     match /{document=**} {
       allow read, write: if false;

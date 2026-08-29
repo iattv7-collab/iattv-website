@@ -10,50 +10,29 @@ content and ministry management system.
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-
   <title>IATTV Administration</title>
-
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 
 <body>
-
   <main class="admin-login-page">
-
     <section class="admin-login-card">
-
       <div class="admin-brand">
         <div class="admin-logo">IATTV</div>
-
         <div class="admin-divider"></div>
-
-        <p class="admin-subtitle">
-          Ministry Administration
-        </p>
+        <p class="admin-subtitle">Ministry Administration</p>
       </div>
 
       <div class="admin-welcome">
         <h1>Welcome</h1>
-
-        <p>
-          Sign in to manage IATTV ministry content.
-        </p>
+        <p>Sign in to manage IATTV ministry content.</p>
       </div>
 
       <form id="adminLoginForm">
-
         <div class="form-group">
-          <label for="email">
-            Email
-          </label>
-
+          <label for="email">Email</label>
           <input
             id="email"
             name="email"
@@ -64,10 +43,7 @@ content and ministry management system.
         </div>
 
         <div class="form-group">
-          <label for="password">
-            Password
-          </label>
-
+          <label for="password">Password</label>
           <input
             id="password"
             name="password"
@@ -77,36 +53,23 @@ content and ministry management system.
           >
         </div>
 
-        <button
-          id="loginButton"
-          class="admin-login-button"
-          type="submit"
-        >
+        <button id="loginButton" class="admin-login-button" type="submit">
           Sign In
         </button>
 
-        <p
-          id="loginMessage"
-          class="login-message"
-          aria-live="polite"
-        ></p>
+        <button id="forgotPasswordButton" class="admin-secondary-button" type="button">
+          Forgot password
+        </button>
 
+        <p id="loginMessage" class="login-message" aria-live="polite"></p>
       </form>
 
       <div class="admin-login-footer">
-        <a href="/">
-          Return to IATTV
-        </a>
+        <a href="/">Return to IATTV</a>
       </div>
-
     </section>
-
   </main>
 
-  <script
-    type="module"
-    src="/js/admin/admin-login.js"
-  ></script>
-
+  <script type="module" src="/js/admin/admin-login.js"></script>
 </body>
 </html>

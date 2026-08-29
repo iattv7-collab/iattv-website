@@ -573,7 +573,7 @@ exports.createGive2Checkout = onCall(
     };
 
     if (frequency === "monthly") {
-      priceData.recurring = {interval: "month"};
+      priceData.recurring = { interval: "month" };
     }
 
     try {
@@ -599,7 +599,7 @@ exports.createGive2Checkout = onCall(
         ],
       });
 
-      return {success: true, url: session.url};
+      return { success: true, url: session.url };
     } catch (error) {
       console.error("createGive2Checkout Stripe error:", error);
       throw new HttpsError(
@@ -663,9 +663,214 @@ exports.stripeGive2Webhook = onRequest(
         source: "give-2-stripe",
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, {merge: true});
+      }, { merge: true });
     }
 
     res.status(200).send("ok");
   },
 );
+
+exports.createIattvAdmin = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const callerSnap = await db.collection("admins").doc(request.auth.uid).get();
+  const caller = callerSnap.exists ? callerSnap.data() : null;
+  const callerRole = String((caller && caller.role) || "");
+
+  if (!caller || caller.active !== true || caller.protected !== true) {
+    throw new HttpsError("permission-denied", "Only a locked administrator can manage users.");
+  }
+
+  const data = request.data || {};
+  const name = clean(data.name, 80);
+  const email = clean(data.email, 254).toLowerCase();
+  const password = String(data.password || "");
+  const role = clean(data.role, 20).toLowerCase();
+  const allowed = ["full", "content", "media", "prayer", "giving", "accountant"];
+
+  if (!email || !validEmail(email)) {
+    throw new HttpsError("invalid-argument", "A valid email is required.");
+  }
+  if (password.length < 8) {
+    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
+  }
+  if (allowed.indexOf(role) === -1) {
+    throw new HttpsError("invalid-argument", "Choose a valid role.");
+  }
+
+  try {
+    const user = await admin.auth().createUser({
+      email: email,
+      password: password,
+      displayName: name,
+    });
+
+    const roles = Array.isArray(data.roles) ? data.roles : [role];
+    await db.collection("admins").doc(user.uid).set({
+      active: true,
+      role: role,
+      roles: roles,
+      name: name,
+      email: email,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: request.auth.uid,
+    });
+
+    return { success: true, uid: user.uid };
+  } catch (error) {
+    console.error("createIattvAdmin:", error);
+    throw new HttpsError("internal", String((error && error.message) || error));
+  }
+});
+
+exports.setIattvAdminActive = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const callerSnap = await db.collection("admins").doc(request.auth.uid).get();
+  const caller = callerSnap.exists ? callerSnap.data() : null;
+  const callerRole = String((caller && caller.role) || "");
+  if (!caller || caller.active !== true || caller.protected !== true) {
+    throw new HttpsError("permission-denied", "Only a locked administrator can manage users.");
+  }
+
+  const targetUid = clean((request.data || {}).uid, 80);
+  const active = (request.data || {}).active === true;
+  if (!targetUid) {
+    throw new HttpsError("invalid-argument", "User is required.");
+  }
+  if (targetUid === request.auth.uid) {
+    throw new HttpsError("failed-precondition", "You cannot change your own access.");
+  }
+
+  await db.collection("admins").doc(targetUid).set({
+    active: active,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedBy: request.auth.uid,
+  }, { merge: true });
+
+  return { success: true };
+});
+
+exports.deleteIattvAdmin = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const callerSnap = await db.collection("admins").doc(request.auth.uid).get();
+  const caller = callerSnap.exists ? callerSnap.data() : null;
+  const callerRole = String((caller && caller.role) || "");
+  if (!caller || caller.active !== true || caller.protected !== true) {
+    throw new HttpsError("permission-denied", "Only a locked administrator can manage users.");
+  }
+
+  const targetUid = clean((request.data || {}).uid, 80);
+  if (!targetUid) {
+    throw new HttpsError("invalid-argument", "User is required.");
+  }
+    if (targetUid === request.auth.uid) {
+    throw new HttpsError("failed-precondition", "You cannot delete your own access.");
+  }
+  const lockedSnap = await db.collection("admins").doc(targetUid).get();
+  if (lockedSnap.exists && lockedSnap.data().protected === true) {
+    throw new HttpsError("failed-precondition", "This administrator is locked and cannot be changed.");
+  }
+
+  await db.collection("admins").doc(targetUid).delete();
+  try {
+    await admin.auth().deleteUser(targetUid);
+  } catch (error) {
+    console.error("Auth delete skipped:", error);
+  }
+
+  return { success: true };
+});
+
+exports.listIattvAdmins = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const callerSnap = await db.collection("admins").doc(request.auth.uid).get();
+  const caller = callerSnap.exists ? callerSnap.data() : null;
+  const callerRole = String((caller && caller.role) || "");
+  if (!caller || caller.active !== true || caller.protected !== true) {
+    throw new HttpsError("permission-denied", "Only a locked administrator can manage users.");
+  }
+
+  const snap = await db.collection("admins").get();
+  const users = [];
+
+  for (const item of snap.docs) {
+    const row = item.data() || {};
+    let name = String(row.name || "");
+    let email = String(row.email || "");
+
+    try {
+      const authUser = await admin.auth().getUser(item.id);
+      name = name || String(authUser.displayName || "");
+      email = email || String(authUser.email || "");
+    } catch (error) {
+      console.error("Admin lookup:", item.id, error);
+    }
+
+    users.push({
+      uid: item.id,
+      name: name,
+      email: email,
+      role: String(row.role || ""),
+            active: row.active === true,
+      protected: row.protected === true,
+    });
+  }
+
+  return { users: users };
+});
+
+exports.updateIattvAdminAccess = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const callerSnap = await db.collection("admins").doc(request.auth.uid).get();
+  const caller = callerSnap.exists ? callerSnap.data() : null;
+  const callerRoles = [].concat(caller && caller.role ? [caller.role] : [], caller && caller.roles ? caller.roles : []);
+  const callerIsFull = caller && caller.active === true &&
+    (callerRoles.indexOf("admin") !== -1 || callerRoles.indexOf("full") !== -1);
+  if (!callerIsFull) {
+    throw new HttpsError("permission-denied", "Only a full administrator can do this.");
+  }
+
+  const data = request.data || {};
+  const targetUid = clean(data.uid, 80);
+  const allowed = ["full", "content", "media", "prayer", "giving", "accountant"];
+  const roles = (Array.isArray(data.roles) ? data.roles : [])
+    .map((item) => clean(item, 20).toLowerCase())
+    .filter((item) => allowed.indexOf(item) !== -1);
+
+  if (!targetUid) {
+    throw new HttpsError("invalid-argument", "User is required.");
+  }
+    if (targetUid === request.auth.uid) {
+    throw new HttpsError("failed-precondition", "You cannot change your own access.");
+  }
+  const lockedSnap = await db.collection("admins").doc(targetUid).get();
+  if (lockedSnap.exists && lockedSnap.data().protected === true) {
+    throw new HttpsError("failed-precondition", "This administrator is locked and cannot be changed.");
+  }
+  if (!roles.length) {
+    throw new HttpsError("invalid-argument", "Choose at least one module.");
+  }
+
+  await db.collection("admins").doc(targetUid).set({
+    roles: roles,
+    role: roles.indexOf("full") !== -1 ? "full" : roles[0],
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedBy: request.auth.uid,
+  }, { merge: true });
+
+  return { success: true, roles: roles };
+});

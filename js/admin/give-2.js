@@ -530,13 +530,23 @@ signOutButton.addEventListener("click", async () => {
 });
 
 async function initializeGive2Admin() {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin(["giving", "accountant"]);
   if (!admin) return;
 
   currentAdmin = admin;
   adminNameEl.textContent = admin.displayName || admin.email || "Administrator";
   loadingEl.hidden = true;
   appEl.hidden = false;
+
+  if (admin.role === "accountant") {
+    document.querySelectorAll("[data-tab]").forEach((tab) => {
+      if (tab.dataset.tab !== "ledger" && tab.dataset.tab !== "reports") {
+        tab.hidden = true;
+      }
+    });
+    const reportsTab = document.querySelector('[data-tab="reports"]');
+    if (reportsTab) reportsTab.click();
+  }
 
   if (manualDate && !manualDate.value) {
     manualDate.value = new Date().toISOString().slice(0, 10);

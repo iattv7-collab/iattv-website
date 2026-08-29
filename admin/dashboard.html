@@ -11,34 +11,26 @@ IATTV ministry content and website operations.
 
 <head>
   <meta charset="UTF-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <meta name="robots" content="noindex, nofollow" />
-
   <title>IATTV Admin Dashboard</title>
-
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 
 <body class="admin-dashboard-body">
-  <!-- Authorization loading screen -->
   <div id="adminLoading" class="admin-loading">
     <div class="admin-loading-brand">IATTV</div>
     <p>Verifying administrator access...</p>
   </div>
 
-  <!-- Protected application -->
   <div id="adminApp" class="admin-app" hidden>
     <header class="admin-header">
       <div class="admin-header-brand">
         <div class="admin-header-logo">IATTV</div>
         <div class="admin-header-label">Ministry Administration</div>
       </div>
-
       <div class="admin-header-user">
         <span id="adminName"></span>
-
         <button id="signOutButton" class="admin-signout-button" type="button">
           Sign Out
         </button>
@@ -48,72 +40,122 @@ IATTV ministry content and website operations.
     <main class="admin-dashboard">
       <section class="dashboard-intro">
         <p class="dashboard-eyebrow">IATTV Ministry</p>
-
         <h1>Administration</h1>
-
         <p>Manage ministry content, services, prayer requests and giving.</p>
       </section>
 
       <section class="dashboard-grid">
-        <a class="dashboard-card" href="/admin/messages.html">
+        <a class="dashboard-card" href="/admin/messages.html" data-roles="content media">
           <div class="dashboard-card-label">CONTENT</div>
-
           <h2>Messages</h2>
-
           <p>Add, edit and publish sermons, teachings and video messages.</p>
         </a>
 
-        <a class="dashboard-card" href="/admin/live-service.html">
+        <a class="dashboard-card" href="/admin/live-service.html" data-roles="content">
           <div class="dashboard-card-label">CONTENT</div>
-
           <h2>Live Service</h2>
-
           <p>Manage the current service link, schedule and availability.</p>
         </a>
 
-        <a class="dashboard-card" href="/admin/site-settings.html">
+        <a class="dashboard-card" href="/admin/site-settings.html" data-roles="full">
           <div class="dashboard-card-label">WEBSITE</div>
-
           <h2>Site Settings</h2>
-
-          <p>
-            Manage editable website information and ministry announcements.
-          </p>
+          <p>Manage editable website information and ministry announcements.</p>
         </a>
 
-        <a class="dashboard-card" href="/admin/prayer-requests.html">
+        <a class="dashboard-card" href="/admin/prayer-requests.html" data-roles="prayer">
           <div class="dashboard-card-label">MINISTRY</div>
-
           <h2>Prayer Requests</h2>
-
-          <p>
-            Review and manage prayer requests submitted through the website.
-          </p>
+          <p>Review and manage prayer requests submitted through the website.</p>
         </a>
 
-        <a class="dashboard-card" href="/admin/giving.html">
+        <a class="dashboard-card" href="/admin/giving.html" data-roles="giving">
           <div class="dashboard-card-label">GIVING</div>
-
           <h2>Giving</h2>
-
           <p>View giving information and manage donation settings.</p>
         </a>
 
-        <a class="dashboard-card" href="/admin/give-2.html">
+        <a class="dashboard-card" href="/admin/give-2.html" data-roles="giving accountant">
           <div class="dashboard-card-label">GIVING</div>
-
           <h2>Give 2</h2>
-
-          <p>
-            Funds, manual gifts, donor statements, and monthly accountant reports.
-          </p>
+          <p>Funds, manual gifts, donor statements, and monthly accountant reports.</p>
         </a>
+
+        <section class="admin-panel" id="addAdminPanel" hidden data-roles="full" style="grid-column: 1 / -1;">
+          <div class="admin-panel-heading">
+            <div>
+              <p class="dashboard-eyebrow">USERS</p>
+              <h2>Add administrator</h2>
+            </div>
+          </div>
+          <form id="addAdminForm">
+            <div class="admin-form-grid">
+              <div class="form-group">
+                <label for="newAdminName">Name</label>
+                <input id="newAdminName" type="text" required />
+              </div>
+              <div class="form-group">
+                <label for="newAdminEmail">Email</label>
+                <input id="newAdminEmail" type="email" required />
+              </div>
+              <div class="form-group">
+                <label for="newAdminPassword">Temporary password</label>
+                <input id="newAdminPassword" type="text" minlength="8" required />
+              </div>
+              <div class="form-group">
+                <label>Modules</label>
+                <div class="admin-module-list">
+                  <label><input type="checkbox" name="newAdminModules" value="content" /> Content</label>
+                  <label><input type="checkbox" name="newAdminModules" value="media" /> Media</label>
+                  <label><input type="checkbox" name="newAdminModules" value="prayer" /> Prayer</label>
+                  <label><input type="checkbox" name="newAdminModules" value="giving" /> Giving</label>
+                  <label><input type="checkbox" name="newAdminModules" value="accountant" /> Accountant</label>
+                  <label><input type="checkbox" name="newAdminModules" value="full" /> Full admin</label>
+                </div>
+              </div>
+            </div>
+            <div class="admin-form-actions">
+              <button class="admin-login-button" type="submit">Add user</button>
+              <p id="addAdminStatus" class="login-message"></p>
+            </div>
+          </form>
+        </section>
+
+        <section class="admin-panel" id="adminUsersPanel" hidden data-roles="full" style="grid-column: 1 / -1;">
+          <div class="admin-panel-heading">
+            <div>
+              <p class="dashboard-eyebrow">USERS</p>
+              <h2>Administrators</h2>
+            </div>
+          </div>
+          <div id="adminUsersList" class="admin-message-list"></div>
+          <p id="adminUsersStatus" class="login-message"></p>
+        </section>
+
+        <section class="admin-panel" style="grid-column: 1 / -1;">
+          <div class="admin-panel-heading">
+            <div>
+              <p class="dashboard-eyebrow">ACCOUNT</p>
+              <h2>Change my password</h2>
+            </div>
+          </div>
+          <form id="changePasswordForm">
+            <div class="admin-form-grid">
+              <div class="form-group">
+                <label for="newPassword">New password</label>
+                <input id="newPassword" type="password" minlength="8" required />
+              </div>
+            </div>
+            <div class="admin-form-actions">
+              <button class="admin-secondary-button" type="submit">Update password</button>
+              <p id="changePasswordStatus" class="login-message"></p>
+            </div>
+          </form>
+        </section>
 
         <a class="dashboard-card" href="/" target="_blank" rel="noopener">
           <div class="dashboard-card-label">WEBSITE</div>
-
           <h2>View Website</h2>
-
           <p>Open the public IATTV website in a new tab.</p>
         </a>
       </section>
@@ -121,29 +163,76 @@ IATTV ministry content and website operations.
   </div>
 
   <script type="module">
-    import { auth } from "/js/services/firebase-config.js";
-
-    import { requireAdmin } from "/js/admin/admin-guard.js";
-
-    import { signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { auth, db, functions } from "/js/services/firebase-config.js";
+    import { requireAdmin, canAccess } from "/js/admin/admin-guard.js";
+    import {
+      signOut,
+      updatePassword,
+    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import {
+      collection,
+      getDocs,
+    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-functions.js";
 
     const loadingEl = document.getElementById("adminLoading");
-
     const appEl = document.getElementById("adminApp");
-
     const adminNameEl = document.getElementById("adminName");
-
     const signOutButton = document.getElementById("signOutButton");
+
+    async function loadAdmins() {
+      const adminUsersList = document.getElementById("adminUsersList");
+      const result = await httpsCallable(functions, "listIattvAdmins")();
+      const users = (result.data && result.data.users) || [];
+      const myUid = auth.currentUser ? auth.currentUser.uid : "";
+      adminUsersList.innerHTML = users.map((row) => {
+        const label = row.name || row.email || row.uid;
+        const isMe = row.uid === myUid;
+        const isLocked = row.protected === true;
+        const actions = isMe
+          ? '<div style="color:#6b7484;font-size:13px">You</div>'
+          : isLocked
+            ? '<div style="color:#6b7484;font-size:13px">Locked</div>'
+            : (
+              '<div style="display:flex;gap:8px">' +
+              '<button type="button" class="admin-secondary-button" data-act="toggle">' +
+              (row.active ? "Deactivate" : "Activate") +
+              "</button>" +
+              '<button type="button" class="admin-secondary-button" data-act="delete">Delete</button>' +
+              "</div>"
+            );
+        return (
+          '<div class="admin-message-item" data-uid="' + row.uid + '">' +
+          "<div><strong>" + label + "</strong>" +
+          '<div style="margin-top:6px;color:#6b7484;font-size:13px">' +
+          (row.email || "") + " • " + (row.role || "") + " • " +
+          (row.active ? "Active" : "Off") +
+          "</div></div>" +
+          actions +
+          "</div>"
+        );
+      }).join("");
+    }
 
     async function initializeDashboard() {
       const admin = await requireAdmin();
-
-      if (!admin) {
-        return;
-      }
+      if (!admin) return;
 
       adminNameEl.textContent =
         admin.displayName || admin.email || "Administrator";
+
+      document.querySelectorAll("[data-roles]").forEach((card) => {
+        const allowed = card.dataset.roles.split(/\s+/).filter(Boolean);
+        if (!canAccess(admin, allowed)) {
+          card.hidden = true;
+        }
+      });
+
+      if (admin.protected === true) {
+        document.getElementById("addAdminPanel").hidden = false;
+        document.getElementById("adminUsersPanel").hidden = false;
+        await loadAdmins();
+      }
 
       loadingEl.hidden = true;
       appEl.hidden = false;
@@ -152,10 +241,83 @@ IATTV ministry content and website operations.
     signOutButton.addEventListener("click", async () => {
       try {
         await signOut(auth);
-
         window.location.replace("/admin/");
       } catch (error) {
         console.error("IATTV sign-out error:", error);
+      }
+    });
+
+    const addAdminForm = document.getElementById("addAdminForm");
+    addAdminForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const status = document.getElementById("addAdminStatus");
+      status.textContent = "Adding user...";
+      try {
+        const createIattvAdmin = httpsCallable(functions, "createIattvAdmin");
+        const roles = Array.from(
+          document.querySelectorAll('input[name="newAdminModules"]:checked'),
+        ).map((item) => item.value);
+        if (!roles.length) {
+          status.textContent = "Choose at least one module.";
+          return;
+        }
+        await createIattvAdmin({
+          name: document.getElementById("newAdminName").value.trim(),
+          email: document.getElementById("newAdminEmail").value.trim(),
+          password: document.getElementById("newAdminPassword").value,
+          role: roles.indexOf("full") !== -1 ? "full" : roles[0],
+          roles: roles,
+        });
+        status.textContent = "User added. They can sign in at /admin/";
+        addAdminForm.reset();
+        await loadAdmins();
+      } catch (error) {
+        console.error(error);
+        status.textContent = error.message || "Unable to add user.";
+      }
+    });
+
+    document.getElementById("adminUsersList").addEventListener("click", async (event) => {
+      const button = event.target.closest("button");
+      const row = event.target.closest("[data-uid]");
+      if (!button || !row) return;
+      const status = document.getElementById("adminUsersStatus");
+      try {
+        if (button.dataset.act === "toggle") {
+          await httpsCallable(functions, "setIattvAdminActive")({
+            uid: row.dataset.uid,
+            active: button.textContent.indexOf("Activate") !== -1,
+          });
+        }
+        if (button.dataset.act === "delete") {
+          if (!window.confirm("Delete this administrator?")) return;
+          await httpsCallable(functions, "deleteIattvAdmin")({
+            uid: row.dataset.uid,
+          });
+        }
+        status.textContent = "Updated.";
+        await loadAdmins();
+      } catch (error) {
+        console.error(error);
+        status.textContent = error.message || "Unable to update user.";
+      }
+    });
+
+    document.getElementById("changePasswordForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const status = document.getElementById("changePasswordStatus");
+      const next = document.getElementById("newPassword").value;
+      if (next.length < 8) {
+        status.textContent = "Use at least 8 characters.";
+        return;
+      }
+      try {
+        await updatePassword(auth.currentUser, next);
+        status.textContent = "Password updated.";
+        event.target.reset();
+      } catch (error) {
+        console.error(error);
+        status.textContent = "Sign in again, then change the password.";
       }
     });
 

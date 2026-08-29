@@ -886,3 +886,22 @@ ADMIN MESSAGE MOBILE
   color: #fff;
   border-color: #0b3190;
 }
+
+.admin-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.admin-module-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.admin-module-list input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}

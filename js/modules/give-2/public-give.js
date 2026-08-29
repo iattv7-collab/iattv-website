@@ -22,22 +22,30 @@ const statusEl = document.getElementById("give2Status");
 let frequency = "one-time";
 let selectedAmount = null;
 
+function isSpanish() {
+  return localStorage.getItem("iattv_language") === "es";
+}
+
 document.querySelectorAll(".give2-freq").forEach((button) => {
   button.addEventListener("click", () => {
     document.querySelectorAll(".give2-freq").forEach((item) => {
       item.classList.remove("active");
     });
     button.classList.add("active");
-        frequency = button.dataset.frequency;
+    frequency = button.dataset.frequency;
     updateSummary();
   });
 });
 
 function updateSummary() {
   const amountText =
-    selectedAmount && selectedAmount > 0 ? `$${selectedAmount}` : "No amount entered";
-  const frequencyText = frequency === "monthly" ? "Monthly" : "One-Time";
-  statusEl.textContent = `Selected gift: ${amountText} • ${frequencyText}`;
+    selectedAmount && selectedAmount > 0 ? "$" + selectedAmount : isSpanish() ? "Sin cantidad" : "No amount entered";
+  const frequencyText = frequency === "monthly"
+    ? isSpanish() ? "Mensual" : "Monthly"
+    : isSpanish() ? "Una vez" : "One-Time";
+  statusEl.textContent = isSpanish()
+    ? "Ofrenda: " + amountText + " • " + frequencyText
+    : "Selected gift: " + amountText + " • " + frequencyText;
 }
 
 customAmount.addEventListener("input", () => {
@@ -46,7 +54,9 @@ customAmount.addEventListener("input", () => {
 });
 
 async function loadPublicFunds() {
-  fundSelect.innerHTML = `<option value="">Loading funds...</option>`;
+  fundSelect.innerHTML = "<option value=\"\">" +
+    (isSpanish() ? "Cargando fondos..." : "Loading funds...") +
+    "</option>";
 
   try {
     const fundsQuery = query(
@@ -61,21 +71,27 @@ async function loadPublicFunds() {
       .sort((a, b) => (a.order || 0) - (b.order || 0));
 
     if (!funds.length) {
-      fundSelect.innerHTML = `<option value="">No funds available yet</option>`;
+      fundSelect.innerHTML = "<option value=\"\">" +
+        (isSpanish() ? "No hay fondos todavía" : "No funds available yet") +
+        "</option>";
       return;
     }
 
     fundSelect.innerHTML =
-      `<option value="">Select a fund</option>` +
+      "<option value=\"\">" +
+      (isSpanish() ? "Seleccione un fondo" : "Select a fund") +
+      "</option>" +
       funds
-        .map(
-          (fund) =>
-            `<option value="${fund.id}" data-name="${fund.name || ""}">${fund.name}</option>`,
-        )
+        .map((fund) => {
+          return "<option value=\"" + fund.id + "\" data-name=\"" +
+            (fund.name || "") + "\">" + (fund.name || "") + "</option>";
+        })
         .join("");
   } catch (error) {
     console.error("Unable to load Give 2 funds:", error);
-    fundSelect.innerHTML = `<option value="">Unable to load funds</option>`;
+    fundSelect.innerHTML = "<option value=\"\">" +
+      (isSpanish() ? "No se pudieron cargar los fondos" : "Unable to load funds") +
+      "</option>";
   }
 }
 
@@ -84,24 +100,30 @@ form.addEventListener("submit", (event) => {
 
   const amount = Number(selectedAmount);
   const fundId = fundSelect.value;
-  const fundName = fundSelect.selectedOptions[0]?.dataset.name || "";
+  const fundName = fundSelect.selectedOptions[0]
+    ? fundSelect.selectedOptions[0].dataset.name || ""
+    : "";
 
   if (!amount || amount < 1) {
-    statusEl.textContent = "Please select or enter an amount.";
+    statusEl.textContent = isSpanish()
+      ? "Escriba una cantidad."
+      : "Please select or enter an amount.";
     return;
   }
 
   if (!fundId) {
-    statusEl.textContent = "Please select a fund.";
+    statusEl.textContent = isSpanish()
+      ? "Seleccione un fondo."
+      : "Please select a fund.";
     return;
   }
 
   const draft = {
-    amount,
+    amount: amount,
     currency: "USD",
-    frequency,
-    fundId,
-    fundName,
+    frequency: frequency,
+    fundId: fundId,
+    fundName: fundName,
     firstName: document.getElementById("firstName").value.trim(),
     lastName: document.getElementById("lastName").value.trim(),
     email: document.getElementById("email").value.trim(),
@@ -110,8 +132,64 @@ form.addEventListener("submit", (event) => {
 
   console.log("Give 2 draft (not charged):", draft);
 
-  statusEl.textContent =
-    `Ready: ${frequency === "monthly" ? "Monthly" : "One-time"} $${amount} to ${fundName}. Stripe checkout will be connected next.`;
+  statusEl.textContent = isSpanish()
+    ? "Listo: " + (frequency === "monthly" ? "Mensual" : "Una vez") +
+      " $" + amount + " para " + fundName + ". El cobro se conectará después."
+    : "Ready: " + (frequency === "monthly" ? "Monthly" : "One-time") +
+      " $" + amount + " to " + fundName + ". Stripe checkout will be connected next.";
 });
 
-loadPublicFunds();
+function applyGive2Language() {
+  const es = isSpanish();
+
+  const set = (id, en, spanish) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = es ? spanish : en;
+  };
+
+  set("give2Eyebrow", "GIVE TO IATTV", "OFRENDA IATTV");
+  set("give2Title", "Partner With the Ministry", "Colabore con el ministerio");
+  set(
+    "give2Intro",
+    "Choose an amount, frequency, and fund. Payment processing will be added next. No card information is collected on this page.",
+    "Elija cantidad, frecuencia y fondo. El cobro con tarjeta se añadirá después. Esta página no pide datos de tarjeta.",
+  );
+  set("give2FrequencyTitle", "Frequency", "Frecuencia");
+  set("give2OneTime", "One-Time", "Una vez");
+  set("give2Monthly", "Monthly", "Mensual");
+  set("give2AmountTitle", "Gift Amount", "Cantidad");
+  set(
+    "give2AmountLabel",
+    "Enter the amount you would like to give",
+    "Escriba la cantidad que desea ofrendar",
+  );
+  set("give2FundTitle", "Fund", "Fondo");
+  set("give2InfoTitle", "Your Information", "Sus datos");
+  set("give2FirstName", "First name", "Nombre");
+  set("give2LastName", "Last name", "Apellido");
+  set("give2Email", "Email", "Correo");
+  set("give2Phone", "Phone (optional)", "Teléfono (opcional)");
+  set("give2Submit", "Continue to Give", "Continuar para ofrendar");
+  set(
+    "give2CardNote",
+    "Card payments will be added last. IATTV does not collect card numbers on this page. Cash and check gifts can be recorded by the administrator.",
+    "Los pagos con tarjeta se añadirán al final. IATTV no pide números de tarjeta en esta página. El administrador puede registrar ofrendas en efectivo o cheque.",
+  );
+  set(
+    "give2StatementNote",
+    "Need a record of gifts already received?",
+    "¿Necesita un comprobante de ofrendas recibidas?",
+  );
+  set("give2StatementLink", "Request a statement", "Solicitar estado de cuenta");
+
+  updateSummary();
+  loadPublicFunds();
+}
+
+document.querySelectorAll("[data-language]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setTimeout(applyGive2Language, 0);
+  });
+});
+
+applyGive2Language();

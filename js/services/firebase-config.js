@@ -20,10 +20,9 @@ import {
   getFunctions,
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-functions.js";
 
-// ------------------------------------------------------
-// Firebase configuration
-// Project: iattv-jesus
-// ------------------------------------------------------
+import {
+  getStorage,
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB6ax5ywaI9ebpM_SZFkQyyGe8Cq6UPURg",
@@ -35,23 +34,17 @@ const firebaseConfig = {
   measurementId: "G-8QVGEZBKML",
 };
 
-// ------------------------------------------------------
-// Initialize Firebase
-// ------------------------------------------------------
-
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
-
-// ------------------------------------------------------
-// Exports
-// ------------------------------------------------------
+const storage = getStorage(app);
 
 export {
   app,
   auth,
   db,
   functions,
+  storage,
 };

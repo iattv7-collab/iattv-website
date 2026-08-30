@@ -8,13 +8,42 @@ live invitation card (editable at will).
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>IATTV Admin | Live Invitation</title>
   <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    .flyer-picker {
+      border: 1px dashed rgba(199, 148, 29, 0.45);
+      border-radius: 12px;
+      padding: 16px;
+      background: #fffdf8;
+    }
+    .flyer-picker p {
+      margin: 0 0 10px;
+      font-size: 0.92rem;
+    }
+    .flyer-preview {
+      display: block;
+      max-width: 220px;
+      max-height: 280px;
+      margin-top: 12px;
+      border-radius: 8px;
+    }
+    .flyer-preview[hidden] {
+      display: none;
+    }
+    .card-style-row {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+  </style>
 </head>
+
 <body class="admin-dashboard-body">
 
   <div id="adminLoading" class="admin-loading">
@@ -41,8 +70,8 @@ live invitation card (editable at will).
         <p class="dashboard-eyebrow">CONTENT MANAGEMENT</p>
         <h1>Live Invitation</h1>
         <p>
-          Edit the homepage invitation card. Change the name, day, time,
-          and buttons whenever you want. English and Spanish are separate.
+          Choose the text card or the flyer in the same homepage spot.
+          Tap the flyer to expand. Watch Live still opens the stream.
         </p>
       </section>
 
@@ -58,13 +87,39 @@ live invitation card (editable at will).
             </div>
 
             <div class="form-group admin-form-full">
-              <label for="title">Invitation title</label>
-              <input
-                id="title"
-                type="text"
-                placeholder="Sábados de Maravillas y Milagros"
-                required
-              >
+              <label>What to show on the homepage</label>
+              <div class="card-style-row">
+                <label class="admin-checkbox-row">
+                  <input type="radio" name="cardStyle" id="cardStyleText" value="text" checked>
+                  <span>Text invitation</span>
+                </label>
+                <label class="admin-checkbox-row">
+                  <input type="radio" name="cardStyle" id="cardStyleFlyer" value="flyer">
+                  <span>Flyer image</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group admin-form-full">
+              <label>Flyer image</label>
+              <div class="flyer-picker" id="flyerPicker" tabindex="0">
+                <p>Choose a file from your phone or computer, or paste an image here.</p>
+                                <input id="flyerFile" type="file" accept="image/*">
+                <img id="flyerPreview" class="flyer-preview" alt="Flyer preview" hidden>
+                <button id="removeFlyerButton" type="button" class="admin-signout-button">
+                  Remove flyer
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="titleEn">Invitation title (English)</label>
+              <input id="titleEn" type="text" placeholder="Saturdays of Wonders and Miracles" required>
+            </div>
+
+            <div class="form-group">
+              <label for="titleEs">Invitation title (Spanish)</label>
+              <input id="titleEs" type="text" placeholder="Sábados de Maravillas y Milagros" required>
             </div>
 
             <div class="form-group">
@@ -140,12 +195,7 @@ live invitation card (editable at will).
           </div>
 
           <div class="admin-form-actions">
-            <button
-              id="saveButton"
-              class="admin-login-button admin-form-submit"
-              type="submit"
-              disabled
-            >
+            <button id="saveButton" class="admin-login-button admin-form-submit" type="submit" disabled>
               Save invitation
             </button>
             <p id="formStatus" class="login-message" aria-live="polite"></p>
@@ -166,6 +216,7 @@ live invitation card (editable at will).
     </main>
   </div>
 
-  <script type="module" src="/js/admin/live-service-admin.js?v=3"></script>
+  <script type="module" src="/js/admin/live-service-admin.js?v=6"></script>
 </body>
+
 </html>

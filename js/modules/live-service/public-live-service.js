@@ -2,8 +2,8 @@
 // FILE: /js/modules/live-service/public-live-service.js
 // PROJECT: IATTV Website
 // PURPOSE:
-// Loads the editable invitation card from Firestore
-// and applies English / Spanish copy.
+// Text invitation or flyer in the same card.
+// Tap flyer = full screen. Watch Live = stream.
 // ======================================================
 
 import { getLiveServiceSettings } from "/js/services/live-service-service.js";
@@ -12,7 +12,8 @@ const headerLiveButton = document.querySelector(".button-live");
 const heroLiveButton = document.querySelector(
   ".hero-buttons .button-secondary",
 );
-const cardLiveButton = document.querySelector(".live-card-link");
+const cardLiveButton = document.querySelector(".live-card-text .live-card-link");
+const flyerLiveButton = document.querySelector("[data-live='flyerCta']");
 const inviteLabelEl = document.querySelector(
   "[data-live='inviteLabel'], .live-label",
 );
@@ -22,8 +23,18 @@ const timeEl = document.querySelector("[data-live='time'], .live-time");
 const featuresEl = document.querySelector(
   "[data-live='features'], .live-features",
 );
+const textModeEl = document.querySelector("[data-live-mode='text']");
+const flyerModeEl = document.querySelector("[data-live-mode='flyer']");
+const flyerThumb = document.querySelector(".live-flyer-thumb");
+const flyerOpen = document.querySelector(".live-flyer-open");
+const lightbox = document.getElementById("flyerLightbox");
+const lightboxImage = document.querySelector(".flyer-lightbox-image");
+const lightboxLive = document.querySelector(".flyer-lightbox-live");
+const lightboxClose = document.querySelector(".flyer-lightbox-close");
 
 const DEFAULTS = {
+  titleEn: "Saturdays of Wonders and Miracles",
+  titleEs: "Sábados de Maravillas y Milagros",
   title: "Sábados de Maravillas y Milagros",
   inviteLabelEn: "You’re Invited",
   inviteLabelEs: "Estás invitado",
@@ -37,6 +48,7 @@ const DEFAULTS = {
   ctaEs: "Entra este sábado",
   headerButtonEn: "Watch Live",
   headerButtonEs: "En vivo",
+  cardStyle: "text",
 };
 
 let cachedSettings = null;
@@ -49,11 +61,9 @@ function formatFeatures(value) {
   if (!value) {
     return "";
   }
-
   if (value.includes("<span")) {
     return value;
   }
-
   return value
     .split("•")
     .map((part) => part.trim())
@@ -82,13 +92,37 @@ function applyLiveLink(link, settings) {
   link.setAttribute("aria-disabled", "true");
 }
 
+function openLightbox(src, alt) {
+  if (!lightbox || !lightboxImage || !src) {
+    return;
+  }
+  lightboxImage.src = src;
+  lightboxImage.alt = alt || "";
+  lightbox.hidden = false;
+  document.body.classList.add("flyer-lightbox-open");
+}
+
+function closeLightbox() {
+  if (!lightbox) {
+    return;
+  }
+  lightbox.hidden = true;
+  document.body.classList.remove("flyer-lightbox-open");
+}
+
 function applyInvitation(settings) {
   if (!settings) {
     return;
   }
 
   const lang = currentLanguage();
-  const title = settings.title || settings.serviceTitle || DEFAULTS.title;
+  const title =
+    lang === "es"
+      ? settings.titleEs ||
+        settings.title ||
+        settings.serviceTitle ||
+        DEFAULTS.titleEs
+      : settings.titleEn || DEFAULTS.titleEn;
   const label =
     lang === "es"
       ? settings.inviteLabelEs || DEFAULTS.inviteLabelEs
@@ -121,10 +155,25 @@ function applyInvitation(settings) {
   if (cardLiveButton) cardLiveButton.textContent = cta;
   if (headerLiveButton) headerLiveButton.textContent = header;
   if (heroLiveButton) heroLiveButton.textContent = header;
+  if (flyerLiveButton) flyerLiveButton.textContent = header;
+  if (lightboxLive) lightboxLive.textContent = header;
 
   applyLiveLink(headerLiveButton, settings);
   applyLiveLink(heroLiveButton, settings);
   applyLiveLink(cardLiveButton, settings);
+  applyLiveLink(flyerLiveButton, settings);
+  applyLiveLink(lightboxLive, settings);
+
+  const flyerUrl = settings.flyerUrl || "";
+  const useFlyer = settings.cardStyle === "flyer" && flyerUrl;
+
+  if (textModeEl) textModeEl.hidden = useFlyer;
+  if (flyerModeEl) flyerModeEl.hidden = !useFlyer;
+
+  if (flyerThumb && flyerUrl) {
+    flyerThumb.src = flyerUrl;
+    flyerThumb.alt = title;
+  }
 }
 
 function watchLanguageSwitch() {
@@ -132,6 +181,34 @@ function watchLanguageSwitch() {
     button.addEventListener("click", () => {
       window.setTimeout(() => applyInvitation(cachedSettings || DEFAULTS), 0);
     });
+  });
+}
+
+function watchFlyer() {
+  if (flyerOpen) {
+    flyerOpen.addEventListener("click", () => {
+      const src = flyerThumb && flyerThumb.src;
+      const alt = flyerThumb && flyerThumb.alt;
+      openLightbox(src, alt);
+    });
+  }
+
+  if (lightboxClose) {
+    lightboxClose.addEventListener("click", closeLightbox);
+  }
+
+  if (lightbox) {
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) {
+        closeLightbox();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeLightbox();
+    }
   });
 }
 
@@ -147,4 +224,5 @@ async function loadLiveService() {
 }
 
 watchLanguageSwitch();
+watchFlyer();
 loadLiveService();

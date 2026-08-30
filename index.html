@@ -16,7 +16,7 @@ PURPOSE: Main public homepage for IATTV — I Am The True Vine.
   <meta name="description"
     content="IATTV — I Am The True Vine. Proclaiming Jesus Christ, preaching His Word, making disciples, and reaching people with the Gospel." />
 
-  <link rel="stylesheet" href="css/styles.css?v=20260830" />
+  <link rel="stylesheet" href="css/styles.css?v=20260830c" />
 </head>
 
 <body>
@@ -92,15 +92,24 @@ PURPOSE: Main public homepage for IATTV — I Am The True Vine.
         </div>
 
         <aside class="live-card" id="live">
-          <p class="live-label" data-live="inviteLabel">You’re Invited</p>
-          <h2 class="live-title" data-live="title">Sábados de Maravillas y Milagros</h2>
-          <p class="live-day" data-live="day">Saturdays</p>
-          <p class="live-time" data-live="time">7:00 PM EST</p>
-          <div class="small-divider"></div>
-          <p class="live-features" data-live="features">
-            Faith <span>•</span> Word <span>•</span> Power
-          </p>
-          <a href="#" class="live-card-link" data-live="cta">Join us this Saturday</a>
+          <div class="live-card-text" data-live-mode="text">
+            <p class="live-label" data-live="inviteLabel">You’re Invited</p>
+            <h2 class="live-title" data-live="title">Sábados de Maravillas y Milagros</h2>
+            <p class="live-day" data-live="day">Saturdays</p>
+            <p class="live-time" data-live="time">7:00 PM EST</p>
+            <div class="small-divider"></div>
+            <p class="live-features" data-live="features">
+              Faith <span>•</span> Word <span>•</span> Power
+            </p>
+            <a href="#" class="live-card-link" data-live="cta">Join us this Saturday</a>
+          </div>
+
+          <div class="live-card-flyer" data-live-mode="flyer" hidden>
+            <button type="button" class="live-flyer-open" aria-label="Open flyer">
+              <img class="live-flyer-thumb" alt="Event flyer">
+            </button>
+            <a href="#" class="live-card-link" data-live="flyerCta">Watch Live</a>
+          </div>
         </aside>
       </div>
 
@@ -338,6 +347,12 @@ PURPOSE: Main public homepage for IATTV — I Am The True Vine.
       <p>John 15:1</p>
     </div>
   </footer>
+
+  <div id="flyerLightbox" class="flyer-lightbox" hidden>
+    <button type="button" class="flyer-lightbox-close" aria-label="Close flyer">×</button>
+    <img class="flyer-lightbox-image" alt="">
+    <a href="#" class="button button-live flyer-lightbox-live">Watch Live</a>
+  </div>
 
   <script src="js/app.js"></script>
   <script type="module" src="/js/modules/messages/public-messages.js"></script>

@@ -449,65 +449,84 @@ p {
     gap: 14px;
 }
 
-
 /* ======================================================
    LIVE CARD
 ====================================================== */
 
 .live-card {
     width: 100%;
-    max-width: 360px;
+    max-width: 380px;
     margin-left: auto;
-    padding: 32px;
+    padding: 36px 32px 32px;
 
-    border: 1px solid rgba(199, 148, 29, 0.25);
-    border-radius: 12px;
+    border: 1px solid rgba(199, 148, 29, 0.28);
+    border-radius: 16px;
 
-    background: rgba(255, 255, 255, 0.93);
-    box-shadow: var(--shadow);
+    background:
+        linear-gradient(180deg, rgba(255, 252, 246, 0.97) 0%, rgba(255, 255, 255, 0.94) 100%);
+    box-shadow:
+        0 18px 40px rgba(20, 36, 72, 0.16),
+        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
 
     text-align: center;
 }
 
 .live-label {
-    margin-bottom: 6px;
+    margin-bottom: 10px;
 
     color: var(--gold);
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
 }
 
-.live-card h2 {
-    margin-bottom: 4px;
+.live-card h2,
+.live-title {
+    margin: 0 0 8px;
 
     color: var(--royal-blue);
-    font-size: 2rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.55rem;
     font-weight: 400;
+    font-style: italic;
+    line-height: 1.25;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.live-day {
+    margin: 0 0 2px;
+
+    color: var(--royal-blue-dark);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
 }
 
 .live-time {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 
     color: var(--royal-blue-dark);
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 1.35rem;
+    font-size: 1.2rem;
 }
 
 .small-divider {
     width: 80px;
     height: 1px;
-    margin: 0 auto 18px;
+    margin: 0 auto 16px;
 
     background: var(--gold-light);
 }
 
 .live-features {
+    margin-bottom: 4px;
     color: var(--royal-blue);
-    font-size: 0.8rem;
+    font-size: 0.76rem;
     font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
@@ -518,14 +537,30 @@ p {
 
 .live-card-link {
     display: inline-block;
-    margin-top: 10px;
+    margin-top: 16px;
+    padding: 10px 22px;
+
+    border: 1px solid var(--gold);
+    border-radius: 999px;
 
     color: var(--royal-blue);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    text-decoration: none;
 }
 
+.live-card-link:hover {
+    background: var(--royal-blue);
+    border-color: var(--royal-blue);
+    color: #fff;
+}
+
+.live-card-link.live-service-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
 
 /* ======================================================
    QUICK ACTIONS

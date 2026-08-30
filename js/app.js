@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navGive: "Give",
       navContact: "Contact",
 
-      joinLiveService: "Join Live Service",
+      joinLiveService: "Watch Live",
 
       ministryName: "I AM THE TRUE VINE",
       heroJesus: "JESUS CHRIST",
@@ -48,11 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
       jesusIsLord: "JESUS IS LORD",
       watchMessages: "Watch Messages",
 
-      liveLabel: "Join Us Live",
-      liveDay: "Every Sunday",
-      liveTime: "10:00 AM (EST)",
-      liveFeatures: "Worship <span>•</span> Word <span>•</span> Prayer",
-      joinService: "Join Service",
+      liveLabel: "You’re Invited",
+      liveDay: "Sábados de Maravillas y Milagros",
+      liveTime: "7:00 PM EST",
+      liveFeatures: "Faith <span>•</span> Word <span>•</span> Power",
+      joinService: "Join us this Saturday",
 
       quickMessagesTitle: "Latest Messages",
       quickMessagesText:
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navGive: "Ofrendar",
       navContact: "Contacto",
 
-      joinLiveService: "Únete al Servicio en Vivo",
+      joinLiveService: "En vivo",
 
       ministryName: "YO SOY LA VID VERDADERA",
       heroJesus: "JESUCRISTO",
@@ -133,11 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
       jesusIsLord: "JESÚS ES EL SEÑOR",
       watchMessages: "Ver Mensajes",
 
-      liveLabel: "Únete en Vivo",
-      liveDay: "Cada Domingo",
-      liveTime: "10:00 AM (EST)",
-      liveFeatures: "Adoración <span>•</span> Palabra <span>•</span> Oración",
-      joinService: "Entrar al Servicio",
+      liveLabel: "Estás invitado",
+      liveDay: "Sábados de Maravillas y Milagros",
+      liveTime: "7:00 PM EST",
+      liveFeatures: "Fe <span>•</span> Palabra <span>•</span> Poder",
+      joinService: "Entra este sábado",
 
       quickMessagesTitle: "Últimos Mensajes",
       quickMessagesText:
@@ -258,11 +258,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setText(".hero-buttons .button-primary", t.watchMessages);
     setText(".hero-buttons .button-secondary", t.joinLiveService);
 
-    // LIVE CARD
-    setText(".live-label", t.liveLabel);
-    setText(".live-card h2", t.liveDay);
-    setHtml(".live-features", t.liveFeatures);
-    setText(".live-card-link", t.joinService);
+    // LIVE CARD is owned by /js/modules/live-service/public-live-service.js
+    // so admin can edit the invitation without language files overwriting it.
 
     // QUICK ACTIONS
     const actionCards = document.querySelectorAll(".action-card");
